@@ -34,53 +34,57 @@ const Sidebar = () => {
     {
       label: "Home",
       icon: <Home />,
-      href: "/home", // Add href for Home
+      href: "/",
+      subItems:[
+        {label:"Go to DashBoard",icon:<Home />,href:"/"},
+      ]
     },
     {
       label: "Administration Statistics",
       icon: <BarChart2 />,
-      href: "/admin/statistics", // Add href for Administration Statistics
+      href: "/admin/statistics",
       subItems: [
-        { label: "Stream Stats", icon: <FileText />, href: "./admin/stream.jsx"  },
-        { label: "Student Stats", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\student.jsx" },
-        { label: "Admission Stats", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\admission.jsx" },
-        { label: "Payment Stats", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\payment.jsx" },
+        { label: "Stream Stats", icon: <FileText />, href: "/admin/stream" },
+        { label: "Student Stats", icon: <FileText />, href: "/admin/student" },
+        { label: "Admission Stats", icon: <FileText />, href: "/admin/admission" },
+        { label: "Payment Stats", icon: <FileText />, href: "/admin/payment" },
       ],
     },
     {
       label: "Website Management",
       icon: <Globe />,
-      href: "/admin/website", // Add href for Website Management
+      href: "/website",
       subItems: [
-        { label: "News/Notice", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\news.jsx" },
-        { label: "Slider", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\slider.jsx" },
-        { label: "Ticker", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\ticker.jsx" },
-        { label: "Faculty", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\faculty.jsx" },
+        { label: "News/Notice", icon: <FileText />, href: "/website/news" },
+        { label: "Slider", icon: <FileText />, href: "/website/slider" },
+        { label: "Ticker", icon: <FileText />, href: "/website/ticker" },
+        { label: "Faculty", icon: <FileText />, href: "/website/faculty" },
       ],
     },
     {
       label: "Library Management",
       icon: <Book />,
-      href: "/admin/library", // Add href for Library Management
+      href: "/library",
       subItems: [
-        { label: "Total Inventory", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\inventory.jsx" },
-        { label: "Total Members", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\members.jsx" },
-        { label: "Fine Collection Stats", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\fines.jsx" },
-        { label: "Book Issued Stats", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\issued.jsx" },
+        { label: "Total Inventory", icon: <FileText />, href: "/library/inventory" },
+        { label: "Total Members", icon: <FileText />, href: "/library/member" },
+        { label: "Fine Collection Stats", icon: <FileText />, href: "/library/fine" },
+        { label: "Book Issued Stats", icon: <FileText />, href: "/library/bookissue" },
       ],
     },
     {
       label: "Grievances and Feedbacks",
       icon: <MessageCircle />,
-      href: "/admin/grievances", // Add href for Grievances and Feedbacks
+      href: "/feedback",
       subItems: [
-        { label: "Grievance Stats", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\grievances.jsx" },
-        { label: "Feedbacks Received", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\feedbacks.jsx" },
-        { label: "Inquiries Received", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\inquiries.jsx" },
-        { label: "Contact Us Submissions", icon: <FileText />, href: "C:\\project\\CollegeERP\\client\\src\\admin\\contact.jsx" },
+        { label: "Grievance Stats", icon: <FileText />, href: "/feedback/grievance" },
+        { label: "Feedbacks Received", icon: <FileText />, href: "/feedback/feedback" },
+        { label: "Inquiries Received", icon: <FileText />, href: "/feedback/inquiries" },
+        { label: "Contact Us Submissions", icon: <FileText />, href: "/feedback/contact" },
       ],
     },
   ];
+  
 
   // Define theme colors
   const theme = {

@@ -1,6 +1,9 @@
-import React from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const DashboardCard = ({ title, items, color }) => {
+const DashboardCard = ({ title, items, color, link }) => {
+  const navigate = useNavigate();
   const colorClasses = {
     red: 'bg-red-500',
     blue: 'bg-blue-600',
@@ -20,7 +23,10 @@ const DashboardCard = ({ title, items, color }) => {
             <span className="ml-2 font-medium">{value}</span>
           </div>
         ))}
-        <button className="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors">
+        <button
+          onClick={() => navigate(link)}
+          className="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+        >
           Manage
         </button>
       </div>
@@ -37,32 +43,155 @@ const SectionHeader = ({ title }) => (
 );
 
 const Dashboard = () => {
+
+  const [admissionStats,setAdmissionStats]=useState(
+    {
+      total_applications: 0,
+      approved: 0,
+      pending: 0,
+    }
+  )
+
+  const [studentStats, setStudentStats] = useState({
+    totalStudents: 0,
+    activeStudents: 0,
+    inactiveStudents: 0,
+  });
+
+  const [streamStats, setStreamStats] = useState({
+    main_streams: 0,
+    total_streams: 0,
+    total_sessions: 0,
+  });
+
+  const [paymentStats, setPaymentStats] = useState({
+    totalEntries: 0,
+    paidEntries: 0,
+    unpaidEntries: 0,
+  });
+
+  const [newsStats, setNewsStats] = useState({
+    total_notices: 0,
+    total_tenders: 0,
+    total_advertisements: 0,
+  });
+
+  const [facultyStats, setFacultyStats] = useState({
+    totalDepartments: 0,
+    departments: [],
+    totalFaculties: 0,
+    activeFaculties: 0,
+    disabledFaculties: 0,
+  });
+
+  useEffect(() => {
+
+    const fetchAdmissionStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/admissions/get-all-stats');
+        setAdmissionStats(response.data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    const fetchStudentStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/student/get-student-stats');
+        const { totalStudents, activeStudents, inactiveStudents } = response.data.stats;
+        setStudentStats({ totalStudents, activeStudents, inactiveStudents });
+
+      } catch (error) {
+        console.error('Error fetching student stats:', error);
+      }
+    };
+
+    const fetchStreamStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/stream/get-stream-stats');
+        const [{ main_streams, total_streams, total_sessions }] = response.data; // Assuming response.data is the array
+        setStreamStats({ main_streams, total_streams, total_sessions });
+      } catch (error) {
+        console.error('Error fetching stream stats:', error);
+      }
+    };
+
+    const fetchPaymentStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/payment/get-payment-stats');
+        const { total_entries, paid_entries, unpaid_entries } = response.data;
+      setPaymentStats({
+        totalEntries: total_entries,
+        paidEntries: paid_entries,
+        unpaidEntries: unpaid_entries,
+      });
+      } catch (error) {
+        console.error('Error fetching payment stats:', error);
+      }
+    };
+
+    const fetchNewsStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/news/get-news-stats'); // replace with your endpoint
+        const { total_notices, total_tenders, total_advertisements } = response.data;
+
+        setNewsStats({
+          total_notices, total_tenders, total_advertisements
+        })
+     } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    const fetchFacultyStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/faculty/get-faculty-stats');
+        const { totalDepartments, departments, totalFaculties, activeFaculties, disabledFaculties } = response.data;
+
+        setFacultyStats({
+          totalDepartments,
+          departments,
+          totalFaculties,
+          activeFaculties,
+          disabledFaculties,
+        });
+      } catch (error) {
+        console.error('Error fetching faculty stats:', error);
+      }
+    };
+
+    fetchFacultyStats();
+    fetchNewsStats();
+    fetchAdmissionStats();
+    fetchStudentStats();
+    fetchStreamStats();
+    fetchPaymentStats();
+
+  }, []); 
+
   const adminStats = {
     streams: {
-      'Main Streams': 4,
-      'Streams': 14,
-      'Sessions': 20
+      'Main Streams': streamStats.main_streams,
+      'Streams': streamStats.total_streams,
+      'Sessions': streamStats.total_sessions
     },
     students: {
-      'Total Registered': 4443,
-      'Verified Accounts': 4443,
-      'Unverified Accounts': 0
+      'Total Registered': studentStats.totalStudents,
+      'Verified Accounts': studentStats.activeStudents,
+      'Unverified Accounts': studentStats.inactiveStudents
     },
     admissions: {
-      'Total Applications': 0,
-      'Approved': 0,
-      'Unapproved': 0,
-      'Today': 0
+      'Total Applications': admissionStats.total_applications,
+      'Approved': admissionStats.approved,
+      'Unapproved': admissionStats.pending,
     },
     payments: {
-      'Total Records': 0,
-      'Paid Records': 0,
-      'Unpaid Records': 0,
-      'Today': '0/0/0'
+      'Total Records': paymentStats.totalEntries,
+      'Paid Records': paymentStats.paidEntries,
+      'Unpaid Records': paymentStats.unpaidEntries,
     }
   };
 
-  // Updated library stats with dummy data
   const libraryStats = {
     inventory: {
       'Total Books': 15420,
@@ -109,9 +238,9 @@ const Dashboard = () => {
 
   const websiteStats = {
     news: {
-      'Notices': 16,
-      'Tender': 0,
-      'Advertisement': 0
+      'Notices': newsStats.total_notices,
+      'Tender': newsStats.total_tenders,
+      'Advertisement': newsStats.total_advertisements
     },
     slider: {
       'Total Slides': 5,
@@ -124,56 +253,56 @@ const Dashboard = () => {
       'UnPublished': 0
     },
     faculty: {
-      'Departments': 8,
-      'Total Faculties': 0,
-      'Active': 0,
-      'Disabled': 0
+      'Departments': facultyStats.totalDepartments,
+      'Total Faculties': facultyStats.totalFaculties,
+      'Active': facultyStats.activeFaculties,
+      'Disabled': facultyStats.disabledFaculties
     }
   };
 
   return (
     <div className="flex-grow bg-gray-100 p-8 overflow-auto">
-      {/* Top Header Section for Administration */}
+
       <div className="bg-gray-700 text-white p-4 rounded-lg mb-8">
         <h1 className="text-xl font-semibold">
           Administration + Student Admission Management (in 2024)
         </h1>
       </div>
 
-      {/* Administration Stats Section */}
+
       <SectionHeader title="Administration Statistics" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <DashboardCard title="Stream Stats" color="red" items={adminStats.streams} link="./stream.js" />
-        <DashboardCard title="Student Stats" color="blue" items={adminStats.students} />
-        <DashboardCard title="Admission Stats" color="green" items={adminStats.admissions} />
-        <DashboardCard title="Payment Stats" color="yellow" items={adminStats.payments} />
+        <DashboardCard title="Stream Stats" color="red" items={adminStats.streams} link="/admin/stream" />
+        <DashboardCard title="Student Stats" color="blue" items={adminStats.students} link="/admin/student" />
+        <DashboardCard title="Admission Stats" color="green" items={adminStats.admissions} link="/admin/admission" />
+        <DashboardCard title="Payment Stats" color="yellow" items={adminStats.payments} link="/admin/payment" />
       </div>
 
-      {/* Website Management Section */}
+
       <SectionHeader title="Website Management" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <DashboardCard title="News/Notice" color="red" items={websiteStats.news} />
-        <DashboardCard title="Slider" color="blue" items={websiteStats.slider} />
-        <DashboardCard title="Ticker" color="green" items={websiteStats.ticker} />
-        <DashboardCard title="Faculty" color="yellow" items={websiteStats.faculty} />
+        <DashboardCard title="News/Notice" color="red" items={websiteStats.news} link="/website/news" />
+        <DashboardCard title="Slider" color="blue" items={websiteStats.slider} link="/website/slider" />
+        <DashboardCard title="Ticker" color="green" items={websiteStats.ticker} link="/website/ticker" />
+        <DashboardCard title="Faculty" color="yellow" items={websiteStats.faculty} link="/website/faculty" />
       </div>
 
-      {/* Library Management Section */}
+
       <SectionHeader title="Library Management" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <DashboardCard title="Total Inventory" color="red" items={libraryStats.inventory} />
-        <DashboardCard title="Total Members" color="blue" items={libraryStats.members} />
-        <DashboardCard title="Fine Collection Stats" color="green" items={libraryStats.fineCollection} />
-        <DashboardCard title="Book Issued Stats" color="yellow" items={libraryStats.bookIssued} />
+        <DashboardCard title="Total Inventory" color="red" items={libraryStats.inventory} link="/library/inventory" />
+        <DashboardCard title="Total Members" color="blue" items={libraryStats.members} link="/library/member" />
+        <DashboardCard title="Fine Collection Stats" color="green" items={libraryStats.fineCollection} link="/library/fine" />
+        <DashboardCard title="Book Issued Stats" color="yellow" items={libraryStats.bookIssued} link="/library/bookissue" />
       </div>
 
-      {/* Grievances Section */}
+
       <SectionHeader title="Grievances and Feedbacks (in 2024)" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <DashboardCard title="Grievance Stats" color="red" items={grievanceStats.grievance} />
-        <DashboardCard title="Feedbacks Received" color="blue" items={grievanceStats.feedback} />
-        <DashboardCard title="Inquiries Received" color="green" items={grievanceStats.inquiries} />
-        <DashboardCard title="Contact Us Submissions" color="yellow" items={grievanceStats.submissions} />
+        <DashboardCard title="Grievance Stats" color="red" items={grievanceStats.grievance} link="/feedback/grievance" />
+        <DashboardCard title="Feedbacks Received" color="blue" items={grievanceStats.feedback} link="/feedback/feedback" />
+        <DashboardCard title="Inquiries Received" color="green" items={grievanceStats.inquiries} link="/feedback/inquiries" />
+        <DashboardCard title="Contact Us Submissions" color="yellow" items={grievanceStats.submissions} link="/feedback/contact" />
       </div>
     </div>
   );

@@ -1,25 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Search, MoreVertical } from 'lucide-react';
+import axios from 'axios';
 
 const StudentsPage = () => {
-  const stats = {
-    totalRegistered: 4443,
-    verifiedAccounts: 4443,
-    unverifiedAccounts: 0
-  };
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    activeStudents: 0,
+    inactiveStudents: 0,
+  });
 
-  const studentData = [
-    { id: 1, name: "John Doe", email: "john@example.com", enrollmentNo: "2024001", status: "Active", joinDate: "2024-01-15" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", enrollmentNo: "2024002", status: "Active", joinDate: "2024-01-16" },
-    { id: 3, name: "Mike Johnson", email: "mike@example.com", enrollmentNo: "2024003", status: "Inactive", joinDate: "2024-01-17" },
-    { id: 4, name: "Sarah Williams", email: "sarah@example.com", enrollmentNo: "2024004", status: "Active", joinDate: "2024-01-18" },
-  ];
+  const [studentData, setStudentData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/student/get-student-stats');
+        const { totalStudents, activeStudents, inactiveStudents } = response.data.stats;
+        setStats({ totalStudents, activeStudents, inactiveStudents });
+        
+
+        const studentsResponse = await axios.get('http://localhost:8000/api/student/get-all-students');
+        setStudentData(studentsResponse.data.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="p-6 space-y-6">
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="overflow-hidden">
           <CardContent className="p-0">
@@ -30,7 +43,7 @@ const StudentsPage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-purple-50 to-white">
                 <div className="text-sm font-medium text-purple-600">Total Registered</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-purple-700">{stats.totalRegistered}</div>
+                  <div className="text-2xl font-bold text-purple-700">{stats.totalStudents}</div>
                   <div className="ml-2 text-xs text-purple-500">students</div>
                 </div>
               </div>
@@ -47,7 +60,7 @@ const StudentsPage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-green-50 to-white">
                 <div className="text-sm font-medium text-green-600">Verified Accounts</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-green-700">{stats.verifiedAccounts}</div>
+                  <div className="text-2xl font-bold text-green-700">{stats.activeStudents}</div>
                   <div className="ml-2 text-xs text-green-500">accounts</div>
                 </div>
               </div>
@@ -64,7 +77,7 @@ const StudentsPage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-red-50 to-white">
                 <div className="text-sm font-medium text-red-600">Unverified Accounts</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-red-700">{stats.unverifiedAccounts}</div>
+                  <div className="text-2xl font-bold text-red-700">{stats.inactiveStudents}</div>
                   <div className="ml-2 text-xs text-red-500">accounts</div>
                 </div>
               </div>
@@ -73,7 +86,6 @@ const StudentsPage = () => {
         </Card>
       </div>
 
-      {/* Students List Section */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Students List</h2>
@@ -82,7 +94,6 @@ const StudentsPage = () => {
           </Button>
         </div>
 
-        {/* Search and Filter */}
         <div className="flex gap-4 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -95,7 +106,6 @@ const StudentsPage = () => {
           <Button variant="outline">Filter</Button>
         </div>
 
-        {/* Students Table */}
         <div className="overflow-x-auto rounded-lg border border-gray-200">
           <table className="w-full border-collapse bg-white">
             <thead className="bg-gray-50">
@@ -115,9 +125,7 @@ const StudentsPage = () => {
                   <td className="p-4 text-sm text-gray-600">{student.email}</td>
                   <td className="p-4 text-sm text-gray-600">{student.enrollmentNo}</td>
                   <td className="p-4 text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      student.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full text-xs ${student.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                       {student.status}
                     </span>
                   </td>
