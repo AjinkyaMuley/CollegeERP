@@ -1,45 +1,46 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, DollarSign, Calendar, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import axios from 'axios';
 
 const PaymentPage = () => {
-  const stats = {
-    totalRecords: 0,
-    paidRecords: 0,
-    unpaidRecords: 0,
-    today: "0/0/0"
+  const [stats, setStats] = useState({
+    totalEntries: 0,
+    paidEntries: 0,
+    unpaidEntries: 0,
+  });
+
+  const [paymentData, setPaymentData] = useState([]);
+
+  useEffect(() => {
+    fetchStats();
+    fetchPaymentData();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/payment/get-payment-stats');
+      const { total_entries, paid_entries, unpaid_entries } = response.data;
+      setStats({
+      totalEntries: total_entries,
+      paidEntries: paid_entries,
+      unpaidEntries: unpaid_entries,
+    });
+    } catch (error) {
+      console.error('Error fetching payment stats:', error);
+    }
   };
 
-  const paymentData = [
-    { 
-      id: 1, 
-      studentName: "Alex Johnson", 
-      amount: 5000, 
-      dueDate: "2024-11-15", 
-      status: "Paid",
-      paymentDate: "2024-11-01",
-      paymentMethod: "Credit Card"
-    },
-    { 
-      id: 2, 
-      studentName: "Maria Garcia", 
-      amount: 4500, 
-      dueDate: "2024-11-20", 
-      status: "Unpaid",
-      paymentDate: "-",
-      paymentMethod: "Pending"
-    },
-    { 
-      id: 3, 
-      studentName: "James Wilson", 
-      amount: 5500, 
-      dueDate: "2024-11-10", 
-      status: "Paid",
-      paymentDate: "2024-10-31",
-      paymentMethod: "Bank Transfer"
+  const fetchPaymentData = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/payment/get-all-payments');
+      setPaymentData(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error fetching payment data:", error);
     }
-  ];
+  };
 
   const handleNewPayment = () => {
     // Handle new payment logic
@@ -49,8 +50,18 @@ const PaymentPage = () => {
     // Handle view details logic
   };
 
-  const handleMarkAsPaid = (id) => {
-    // Handle mark as paid logic
+  const handleMarkAsPaid = async(id) => {
+    try {
+      // Call API to mark payment as paid
+      const response = await axios.put(`http://localhost:8000/api/payment/mark-payment-paid/${id}`);
+      if (response) {
+        fetchPaymentData();
+      } else {
+        console.error("Failed to mark as paid");
+      }
+    } catch (error) {
+      console.error("Error marking payment as paid:", error);
+    }
   };
 
   return (
@@ -66,7 +77,7 @@ const PaymentPage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-purple-50 to-white">
                 <div className="text-sm font-medium text-purple-600">Total Records</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-purple-700">{stats.totalRecords}</div>
+                  <div className="text-2xl font-bold text-purple-700">{stats.totalEntries}</div>
                 </div>
               </div>
             </div>
@@ -82,7 +93,7 @@ const PaymentPage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-green-50 to-white">
                 <div className="text-sm font-medium text-green-600">Paid Records</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-green-700">{stats.paidRecords}</div>
+                  <div className="text-2xl font-bold text-green-700">{stats.paidEntries}</div>
                 </div>
               </div>
             </div>
@@ -98,23 +109,7 @@ const PaymentPage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-red-50 to-white">
                 <div className="text-sm font-medium text-red-600">Unpaid Records</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-red-700">{stats.unpaidRecords}</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <div className="flex items-center">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 flex items-center justify-center">
-                <Calendar className="h-8 w-8 text-white" />
-              </div>
-              <div className="p-4 flex-1 bg-gradient-to-br from-blue-50 to-white">
-                <div className="text-sm font-medium text-blue-600">Today</div>
-                <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-blue-700">{stats.today}</div>
+                  <div className="text-2xl font-bold text-red-700">{stats.unpaidEntries}</div>
                 </div>
               </div>
             </div>
@@ -191,14 +186,13 @@ const PaymentPage = () => {
             <tbody>
               {paymentData.map((payment) => (
                 <tr key={payment.id} className="border-t hover:bg-gray-50">
-                  <td className="p-4 text-sm font-medium text-gray-900">{payment.studentName}</td>
+                  <td className="p-4 text-sm font-medium text-gray-900">{payment.student_name}</td>
                   <td className="p-4 text-sm text-gray-600">
                     <div className="flex items-center gap-1">
-                      <DollarSign className="h-4 w-4" />
-                      {payment.amount.toLocaleString()}
+                    ₹{payment.amount.toLocaleString()}
                     </div>
                   </td>
-                  <td className="p-4 text-sm text-gray-600">{payment.dueDate}</td>
+                  <td className="p-4 text-sm text-gray-600">{payment.due_date}</td>
                   <td className="p-4 text-sm">
                     <span className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 w-fit ${
                       payment.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -207,8 +201,8 @@ const PaymentPage = () => {
                       {payment.status}
                     </span>
                   </td>
-                  <td className="p-4 text-sm text-gray-600">{payment.paymentDate}</td>
-                  <td className="p-4 text-sm text-gray-600">{payment.paymentMethod}</td>
+                  <td className="p-4 text-sm text-gray-600">{payment.payment_date}</td>
+                  <td className="p-4 text-sm text-gray-600">{payment.payment_method}</td>
                   <td className="p-4">
                     <div className="flex space-x-2">
                       <Button

@@ -1,66 +1,76 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, Users, Building2, UserCheck, UserX, Mail, PenSquare, Trash2, Eye, CheckCircle } from 'lucide-react';
+import axios from 'axios';
 
 const FacultyPage = () => {
-  const stats = {
-    departments: 8,
-    totalFaculty: 24,
-    active: 22,
-    disabled: 2
+  const [facultyStats, setFacultyStats] = useState({
+    totalDepartments: 0,
+    departments: [],
+    totalFaculties: 0,
+    activeFaculties: 0,
+    disabledFaculties: 0,
+  });
+
+  const [facultyData,setFacultyData]=useState([]);
+
+  const fetchFacultyStats = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/faculty/get-faculty-stats');
+      const { totalDepartments, departments, totalFaculties, activeFaculties, disabledFaculties } = response.data;
+
+      setFacultyStats({
+        totalDepartments,
+        departments,
+        totalFaculties,
+        activeFaculties,
+        disabledFaculties,
+      });
+    } catch (error) {
+      console.error('Error fetching faculty stats:', error);
+    }
+  };
+  
+  const fetchFacultyData=async()=>{
+    try{
+      const response=await axios.get('http://localhost:8000/api/faculty/get-all-faculty');
+      setFacultyData(response.data);
+      console.log(response.data);
+
+    }catch(error){
+      console.error('Error fetching faculty data',error);
+    }
+  }
+
+  useEffect(()=>{
+    fetchFacultyStats();
+    fetchFacultyData();
+  },[])
+
+  const handleNewFaculty = () => {
+    // Handle new faculty logic
   };
 
-  const facultyData = [
-    {
-      id: 1,
-      name: "Dr. Vinay Kumar",
-      designation: "Associate Professor",
-      department: "Computer Science",
-      email: "vinay@iiitn.ac.in",
-      isHOD: true,
-      joinDate: "2020-07-01",
-      status: "Active",
-      specialization: "Machine Learning",
-      qualification: "Ph.D (IIT Delhi)"
-    },
-    {
-      id: 2,
-      name: "Dr. Priya Sharma",
-      designation: "Assistant Professor",
-      department: "Electronics",
-      email: "priya@iiitn.ac.in",
-      isHOD: true,
-      joinDate: "2021-01-15",
-      status: "Active",
-      specialization: "VLSI Design",
-      qualification: "Ph.D (IISc Bangalore)"
-    },
-    {
-      id: 3,
-      name: "Dr. Rahul Verma",
-      designation: "Professor",
-      department: "Mathematics",
-      email: "rahul@iiitn.ac.in",
-      isHOD: false,
-      joinDate: "2019-08-01",
-      status: "Active",
-      specialization: "Applied Mathematics",
-      qualification: "Ph.D (CMI Chennai)"
-    },
-    {
-      id: 4,
-      name: "Dr. Meera Patel",
-      designation: "Assistant Professor",
-      department: "Physics",
-      email: "meera@iiitn.ac.in",
-      isHOD: true,
-      joinDate: "2022-06-30",
-      status: "Disabled",
-      specialization: "Quantum Physics",
-      qualification: "Ph.D (Cambridge University)"
+  const handleEdit = (id) => {
+    // Handle edit logic
+  };
+
+  const handleDelete = async(id) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/faculty/delete-faculty/${id}`);
+      setFacultyData(facultyData.filter((stream) => stream.id !== id));
+      fetchFacultyStats();
+      alert('Stream deleted successfully');
+    } catch (error) {
+      console.error('Error deleting stream:', error);
+      alert('Failed to delete the stream');
     }
-  ];
+  };
+
+  const handleView = (id) => {
+    // Handle view logic
+  };
 
   const departments = [
     "Computer Science",
@@ -72,22 +82,6 @@ const FacultyPage = () => {
     "Humanities",
     "Management"
   ];
-
-  const handleNewFaculty = () => {
-    // Handle new faculty logic
-  };
-
-  const handleEdit = (id) => {
-    // Handle edit logic
-  };
-
-  const handleDelete = (id) => {
-    // Handle delete logic
-  };
-
-  const handleView = (id) => {
-    // Handle view logic
-  };
 
   return (
     <div className="p-6 space-y-6">
@@ -101,7 +95,7 @@ const FacultyPage = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-blue-50 to-white">
                 <div className="text-xs font-medium text-blue-600">Departments</div>
-                <div className="text-xl font-bold text-blue-700">{stats.departments}</div>
+                <div className="text-xl font-bold text-blue-700">{facultyStats.totalDepartments}</div>
               </div>
             </div>
           </CardContent>
@@ -115,7 +109,7 @@ const FacultyPage = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-purple-50 to-white">
                 <div className="text-xs font-medium text-purple-600">Total Faculty</div>
-                <div className="text-xl font-bold text-purple-700">{stats.totalFaculty}</div>
+                <div className="text-xl font-bold text-purple-700">{facultyStats.totalFaculties}</div>
               </div>
             </div>
           </CardContent>
@@ -129,7 +123,7 @@ const FacultyPage = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-green-50 to-white">
                 <div className="text-xs font-medium text-green-600">Active</div>
-                <div className="text-xl font-bold text-green-700">{stats.active}</div>
+                <div className="text-xl font-bold text-green-700">{facultyStats.activeFaculties}</div>
               </div>
             </div>
           </CardContent>
@@ -143,7 +137,7 @@ const FacultyPage = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-red-50 to-white">
                 <div className="text-xs font-medium text-red-600">Disabled</div>
-                <div className="text-xl font-bold text-red-700">{stats.disabled}</div>
+                <div className="text-xl font-bold text-red-700">{facultyStats.disabledFaculties}</div>
               </div>
             </div>
           </CardContent>
@@ -225,7 +219,7 @@ const FacultyPage = () => {
                     </div>
                   </td>
                   <td className="p-3 text-center">
-                    {faculty.isHOD && (
+                    {faculty.is_hod && (
                       <CheckCircle className="h-5 w-5 text-green-600 mx-auto" />
                     )}
                   </td>
@@ -275,7 +269,7 @@ const FacultyPage = () => {
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-700">
             Showing <span className="font-medium">1</span> to <span className="font-medium">4</span> of{' '}
-            <span className="font-medium">{stats.totalFaculty}</span> results
+            <span className="font-medium">{facultyStats.totalFaculties}</span> results
           </p>
           <nav className="inline-flex -space-x-px rounded-md shadow-sm">
             <Button variant="outline" className="rounded-l-md px-2 py-1">Previous</Button>

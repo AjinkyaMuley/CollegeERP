@@ -1,22 +1,42 @@
-import React from 'react'; 
+import React, { useEffect, useState } from 'react'; 
 // import { Link } from 'react-router-dom'; 
 import { Card, CardContent } from "@/components/ui/card"; // Fixed the typo here
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, Play, Users, Radio, Calendar } from 'lucide-react';
+import axios from 'axios';
 
 const Stream = () => {
-  const stats = {
-    mainStreams: 4,
-    streams: 14,
-    sessions: 20
+  const [streamStats, setStreamStats] = useState({
+    main_streams: 0,
+    total_streams: 0,
+    total_sessions: 0,
+  });
+
+  const [streamData,setStreamData]=useState([]);
+  const fetchStreamStats = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/stream/get-stream-stats');
+      const [{ main_streams, total_streams, total_sessions }] = response.data;
+      setStreamStats({ main_streams, total_streams, total_sessions });
+    } catch (error) {
+      console.error('Error fetching stream stats:', error);
+    }
   };
 
-  const dummyData = [
-    { id: 1, name: "Main Stream A", type: "Primary", sessions: 5, status: "Active", lastUpdated: "2024-11-01" },
-    { id: 2, name: "Secondary Stream B", type: "Secondary", sessions: 3, status: "Inactive", lastUpdated: "2024-11-01" },
-    { id: 3, name: "Workshop Stream C", type: "Workshop", sessions: 8, status: "Active", lastUpdated: "2024-10-31" },
-    { id: 4, name: "Special Stream D", type: "Special", sessions: 4, status: "Scheduled", lastUpdated: "2024-10-30" }
-  ];
+  const fetchStreamData=async()=>{
+    try {
+      const response = await axios.get('http://localhost:8000/api/stream/get-all-stream-data');
+      setStreamData(response.data.streamData.data);
+      // console.log(response.data.streamData.data);
+    } catch (error) {
+      console.error('Error fetching stream stats:', error);
+    }
+  }
+  
+  useEffect(()=>{
+    fetchStreamData();
+    fetchStreamStats();
+  },[])
 
   const handleAddStream = () => {
     // Logic to add stream (e.g., open a modal)
@@ -30,8 +50,19 @@ const Stream = () => {
     // Logic to edit stream
   };
 
-  const handleDelete = (id) => {
-    // Logic to delete stream
+  const handleDelete = async (id) => {
+    try {
+      // Send a request to delete the stream
+      await axios.delete(`http://localhost:8000/api/stream/delete-stream/${id}`);
+      
+      setStreamData(streamData.filter((stream) => stream.id !== id));
+      fetchStreamStats();
+      alert('Stream deleted successfully');
+    } catch (error) {
+      console.error('Error deleting stream:', error);
+      alert('Failed to delete the stream');
+    }
+
   };
 
   return (
@@ -46,7 +77,7 @@ const Stream = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-blue-50 to-white">
                 <div className="text-sm font-medium text-blue-600">Main Streams</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-blue-700">{stats.mainStreams}</div>
+                  <div className="text-2xl font-bold text-blue-700">{streamStats.main_streams}</div>
                   <div className="ml-2 text-xs text-blue-500">Active</div>
                 </div>
               </div>
@@ -78,7 +109,7 @@ const Stream = () => {
             </tr>
           </thead>
           <tbody>
-            {dummyData.map(({ id, name, type, sessions, status, lastUpdated }, index) => (
+            {streamData.map(({ id, name, type, sessions, status, lastUpdated }, index) => (
               <tr key={id} className="border-t hover:bg-gray-50">
                 <td className="p-4 text-sm text-gray-600">{index + 1}</td>
                 <td className="p-4 text-sm text-gray-600 font-medium">{name}</td>

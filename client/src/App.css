@@ -40,3 +40,19 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Sidebar */
+.fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* Main content area */
+/* .ml-64 {
+  margin-left: 16rem;
+} */
+
+.overflow-y-auto {
+  overflow-y: auto;
+}

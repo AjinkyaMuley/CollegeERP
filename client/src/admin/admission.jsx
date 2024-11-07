@@ -1,22 +1,44 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Search, MoreVertical, CheckCircle, XCircle, Clock } from 'lucide-react';
+import axios from 'axios';
 
 const AdmissionsPage = () => {
-  const stats = {
-    totalApplications: 0,
-    approved: 0,
-    unapproved: 0,
-    today: 0
-  };
 
-  const applicationData = [
-    { id: 1, name: "Alex Johnson", course: "Computer Science", applicationDate: "2024-11-01", status: "Pending", lastUpdated: "2024-11-01" },
-    { id: 2, name: "Maria Garcia", course: "Business Admin", applicationDate: "2024-11-01", status: "Approved", lastUpdated: "2024-11-01" },
-    { id: 3, name: "James Wilson", course: "Engineering", applicationDate: "2024-10-31", status: "Rejected", lastUpdated: "2024-10-31" },
-    { id: 4, name: "Emma Davis", course: "Medicine", applicationDate: "2024-10-30", status: "Pending", lastUpdated: "2024-10-30" }
-  ];
+  const [stats,setStats]=useState(
+    {
+      total_applications: 0,
+      approved: 0,
+      pending: 0,
+    }
+  )
+  const [admissionsData, setAdmissionsData] = useState([]);
+
+  useEffect(()=>{
+    const fetchAdmissionStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/admissions/get-all-stats');
+        setStats(response.data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    }
+
+    const fetchAdmissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/admissions/get-all-admissions');
+        setAdmissionsData(response.data);
+      } catch (error) {
+        setError('Error fetching admissions data');
+        console.error('Error fetching admissions:', error);
+      } finally {
+      }
+    };
+
+    fetchAdmissions();
+    fetchAdmissionStats();
+  },[])
 
   const handleNewApplication = () => {
     // Handle new application logic
@@ -26,12 +48,40 @@ const AdmissionsPage = () => {
     // Handle view details logic
   };
 
-  const handleApprove = (id) => {
-    // Handle approve logic
+  const handleApprove = async (id) => {
+    try {
+      const response = await axios.put(`http://localhost:8000/api/admissions/approve-admission/${id}`);
+      // Update the status of the application in the state
+      const updatedAdmissionsData = admissionsData.map(application => 
+        application.id === id ? { ...application, status: 'Approved' } : application
+      );
+      setAdmissionsData(updatedAdmissionsData);
+      setStats((prevStats) => ({
+        ...prevStats,
+        approved: prevStats.approved + 1,
+        pending: prevStats.pending - 1,
+      }));
+      
+    } catch (error) {
+      console.error('Error approving application:', error);
+    }
   };
 
-  const handleReject = (id) => {
-    // Handle reject logic
+  const handleReject = async (id) => {
+    try {
+      const response = await axios.put(`http://localhost:8000/api/admissions/reject-admission/${id}`);
+      // Update the status of the application in the state
+      const updatedAdmissionsData = admissionsData.map(application => 
+        application.id === id ? { ...application, status: 'Rejected' } : application
+      );
+      setAdmissionsData(updatedAdmissionsData);
+      setStats((prevStats) => ({
+        ...prevStats,
+        pending: prevStats.pending - 1,
+      }));
+    } catch (error) {
+      console.error('Error rejecting application:', error);
+    }
   };
 
   return (
@@ -47,7 +97,7 @@ const AdmissionsPage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-blue-50 to-white">
                 <div className="text-sm font-medium text-blue-600">Total Applications</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-blue-700">{stats.totalApplications}</div>
+                  <div className="text-2xl font-bold text-blue-700">{stats.total_applications}</div>
                 </div>
               </div>
             </div>
@@ -79,7 +129,7 @@ const AdmissionsPage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-red-50 to-white">
                 <div className="text-sm font-medium text-red-600">Unapproved</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-red-700">{stats.unapproved}</div>
+                  <div className="text-2xl font-bold text-red-700">{stats.pending}</div>
                 </div>
               </div>
             </div>
@@ -89,13 +139,13 @@ const AdmissionsPage = () => {
         <Card className="overflow-hidden">
           <CardContent className="p-0">
             <div className="flex items-center">
-              <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-4 flex items-center justify-center">
+              <div className="bg-gradient-to-br from-red-500 to-red-600 p-4 flex items-center justify-center">
                 <GraduationCap className="h-8 w-8 text-white" />
               </div>
-              <div className="p-4 flex-1 bg-gradient-to-br from-yellow-50 to-white">
-                <div className="text-sm font-medium text-yellow-600">Today</div>
+              <div className="p-4 flex-1 bg-gradient-to-br from-red-50 to-white">
+                <div className="text-sm font-medium text-red-600">Pending</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-yellow-700">{stats.today}</div>
+                  <div className="text-2xl font-bold text-red-700">{stats.total_applications-stats.approved-stats.pending}</div>
                 </div>
               </div>
             </div>
@@ -170,7 +220,7 @@ const AdmissionsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {applicationData.map((application) => (
+              {admissionsData.map((application) => (
                 <tr key={application.id} className="border-t hover:bg-gray-50">
                   <td className="p-4 text-sm font-medium text-gray-900">{application.name}</td>
                   <td className="p-4 text-sm text-gray-600">{application.course}</td>
