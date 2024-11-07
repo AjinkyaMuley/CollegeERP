@@ -169,14 +169,36 @@ export const approveNews = async (req, res) => {
 // Get news statistics by category using a single query
 export const getNewsStats = async (req, res) => {
     try {
+        // Fetch all distinct news categories to inspect the enum values
+        const { data: categoriesData, error: categoriesError } = await supabase
+            .from('news')
+            .select('category', { distinct: true });
+
+        if (categoriesError) {
+            console.error('Error fetching news categories:', categoriesError);
+            res.status(500).json({
+                error: 'Failed to fetch news statistics',
+                details: categoriesError.message
+            });
+            return;
+        }
+
+        // Log the distinct categories to inspect the enum values
+        console.log('Distinct news categories:', categoriesData.map(item => item.category));
+
+        // Update the Supabase query to use the correct enum values
         const { data, error } = await supabase
             .from('news')
             .select('category')
-            .or('category.eq.notice,category.eq.tender,category.eq.advertisement');
+            .or('category.eq.' + categoriesData.map(item => item.category).join(',category.eq.'));
 
         if (error) {
             console.error('Error fetching news counts:', error);
-            throw error;
+            res.status(500).json({
+                error: 'Failed to fetch news statistics',
+                details: error.message
+            });
+            return;
         }
 
         // Count categories using reduce
@@ -186,17 +208,19 @@ export const getNewsStats = async (req, res) => {
             acc[key] = (acc[key] || 0) + 1;
             return acc;
         }, {
-            total_notices: 0,
-            total_tenders: 0,
-            total_advertisements: 0
+            // Initialize the stats object with the distinct categories
+            ...categoriesData.reduce((acc, item) => {
+                acc[`total_${item.category}s`] = 0;
+                return acc;
+            }, {})
         });
 
         res.status(200).json(stats);
     } catch (error) {
         console.error('Error getting news statistics:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Failed to fetch news statistics',
-            details: error.message 
+            details: error.message
         });
     }
 }
