@@ -1,78 +1,73 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, ImageIcon, Eye, PenSquare, Trash2, CheckCircle, Clock } from 'lucide-react';
+import axios from 'axios';
 
 const SliderPage = () => {
-  const stats = {
-    total: 5,
-    published: 5,
+  const [stats, setStats] = useState({
+    total: 0,
+    published: 0,
     unpublished: 0
-  };
+  });
+  
+  const [sliderData, setSliderData] = useState([]);
 
-  const sliderData = [
-    {
-      id: 1,
-      title: "Campus Life",
-      image: "/api/placeholder/800/400",
-      status: "Published",
-      order: 1,
-      location: "Home Page",
-      publishDate: "2024-11-01"
-    },
-    {
-      id: 2,
-      title: "Research Labs",
-      image: "/api/placeholder/800/400",
-      status: "Published",
-      order: 2,
-      location: "About Us",
-      publishDate: "2024-11-01"
-    },
-    {
-      id: 3,
-      title: "Library Building",
-      image: "/api/placeholder/800/400",
-      status: "Published",
-      order: 3,
-      location: "Facilities",
-      publishDate: "2024-10-31"
-    },
-    {
-      id: 4,
-      title: "Sports Complex",
-      image: "/api/placeholder/800/400",
-      status: "Published",
-      order: 4,
-      location: "Home Page",
-      publishDate: "2024-10-30"
-    },
-    {
-      id: 5,
-      title: "Auditorium",
-      image: "/api/placeholder/800/400",
-      status: "Published",
-      order: 5,
-      location: "Events",
-      publishDate: "2024-10-29"
+  // Fetch stats data
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/sliders/sliders-stats');
+      const { publishedSliders, totalSliders, unpublishedSliders } = response.data;
+      setStats({ total:totalSliders, published:publishedSliders, unpublished :unpublishedSliders});
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
     }
-  ];
+  };
 
+  // Fetch slider data
+  const fetchSliderData = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/sliders/get-all-sliders');
+      setSliderData(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Handle new slide logic
   const handleNewSlide = () => {
-    // Handle new slide logic
+    // Add logic to create a new slide, e.g., show a modal or form
   };
 
+  // Handle edit slide logic
   const handleEdit = (id) => {
-    // Handle edit logic
+    // Add logic to edit slide, e.g., open a modal or redirect to an edit page
   };
 
-  const handleDelete = (id) => {
-    // Handle delete logic
+  // Handle delete slide logic
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/sliders/delete-slider/${id}`);
+      setSliderData((prevData) => prevData.filter(slide => slide.id !== id)); // Update state
+      fetchStats(); 
+      fetchSliderData();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
+  // Handle view slide logic
   const handleView = (id) => {
-    // Handle view logic
+    // Add logic to view slide details
   };
+
+  // Fetch data when the component mounts
+  useEffect(() => {
+    fetchStats();
+    fetchSliderData();
+  }, []); // Empty dependency array means this runs once when the component mounts
 
   return (
     <div className="p-6 space-y-6">
@@ -203,34 +198,11 @@ const SliderPage = () => {
                       {slide.status}
                     </span>
                   </td>
-                  <td className="p-3 text-sm text-gray-600">{slide.publishDate}</td>
-                  <td className="p-3">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-blue-600 hover:bg-blue-50"
-                        onClick={() => handleView(slide.id)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-amber-600 hover:bg-amber-50"
-                        onClick={() => handleEdit(slide.id)}
-                      >
-                        <PenSquare className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:bg-red-50"
-                        onClick={() => handleDelete(slide.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  <td className="p-3 text-sm text-gray-600">{slide.publish_date}</td>
+                  <td className="p-3 text-sm text-gray-600 space-x-2">
+                    <Button variant="outline" onClick={() => handleView(slide.id)}><Eye className="h-4 w-4" /></Button>
+                    <Button variant="outline" onClick={() => handleEdit(slide.id)}><PenSquare className="h-4 w-4" /></Button>
+                    <Button variant="outline" onClick={() => handleDelete(slide.id)}><Trash2 className="h-4 w-4" /></Button>
                   </td>
                 </tr>
               ))}
@@ -239,17 +211,12 @@ const SliderPage = () => {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-700">
-            Showing <span className="font-medium">1</span> to <span className="font-medium">5</span> of{' '}
-            <span className="font-medium">5</span> results
-          </p>
-          <nav className="inline-flex -space-x-px rounded-md shadow-sm">
-            <Button variant="outline" className="rounded-l-md px-2 py-1">Previous</Button>
-            <Button variant="outline" className="bg-purple-50 text-purple-600 px-3 py-1">1</Button>
-            <Button variant="outline" className="px-3 py-1">2</Button>
-            <Button variant="outline" className="rounded-r-md px-2 py-1">Next</Button>
-          </nav>
+        <div className="flex justify-between items-center py-4">
+          <div className="text-sm text-gray-600">Page 1 of 5</div>
+          <div className="flex space-x-2">
+            <Button variant="outline">Previous</Button>
+            <Button variant="outline">Next</Button>
+          </div>
         </div>
       </div>
     </div>

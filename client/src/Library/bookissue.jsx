@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, BookOpen, Calendar, AlertCircle, RotateCcw, Plus, Eye, Edit, Filter, FileText } from 'lucide-react';
@@ -12,14 +12,48 @@ import {
 import {
   Badge,
 } from "@/components/ui/badge";
+import axios from 'axios';
 
 const BookIssueStats = () => {
-  const stats = {
-    totalIssues: 1182,
-    currentMonth: 145,
-    overdueBooks: 73,
-    returnsToday: 12
-  };
+
+  const [bookStats,setBookStats]=useState({
+    totalIssues: 0,
+    currentMonth: 0,
+    overdueBooks: 0,
+    returnsToday: 0
+  });
+  const [bookData,setBookData]=useState([]);
+
+  const fetchBookStats=async()=>{
+    try {
+      const response=await axios.get('http://localhost:8000/api/bookissues/get-issue-stats');
+      const {currentMonthIssues,
+        dueToday,
+        overdueIssues,
+        totalIssues}=response.data;
+      setBookStats({totalIssues:totalIssues,
+        currentMonth:currentMonthIssues,
+        overdueBooks:overdueIssues,
+        returnsToday:dueToday});
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const fetchBookData=async()=>{
+    try {
+      const response=await axios.get('http://localhost:8000/api/bookissues/get-all-issues');
+      console.log(response);
+      setBookData(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  useEffect(()=>{
+    fetchBookStats();
+    fetchBookData();
+  },[]);
+
 
   const handleNewIssue = () => {
     // Handle new issue logic
@@ -45,7 +79,7 @@ const BookIssueStats = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-purple-50 to-white">
                 <div className="text-xs font-medium text-purple-600">Total Issues</div>
-                <div className="text-xl font-bold text-purple-700">{stats.totalIssues}</div>
+                <div className="text-xl font-bold text-purple-700">{bookStats.totalIssues}</div>
               </div>
             </div>
           </CardContent>
@@ -59,7 +93,7 @@ const BookIssueStats = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-blue-50 to-white">
                 <div className="text-xs font-medium text-blue-600">Current Month</div>
-                <div className="text-xl font-bold text-blue-700">{stats.currentMonth}</div>
+                <div className="text-xl font-bold text-blue-700">{bookStats.currentMonth}</div>
               </div>
             </div>
           </CardContent>
@@ -73,7 +107,7 @@ const BookIssueStats = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-amber-50 to-white">
                 <div className="text-xs font-medium text-amber-600">Overdue Books</div>
-                <div className="text-xl font-bold text-amber-700">{stats.overdueBooks}</div>
+                <div className="text-xl font-bold text-amber-700">{bookStats.overdueBooks}</div>
               </div>
             </div>
           </CardContent>
@@ -87,7 +121,7 @@ const BookIssueStats = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-green-50 to-white">
                 <div className="text-xs font-medium text-green-600">Returns Today</div>
-                <div className="text-xl font-bold text-green-700">{stats.returnsToday}</div>
+                <div className="text-xl font-bold text-green-700">{bookStats.returnsToday}</div>
               </div>
             </div>
           </CardContent>
@@ -165,54 +199,55 @@ const BookIssueStats = () => {
               </tr>
             </thead>
             <tbody>
-              {[...Array(5)].map((_, index) => (
-                <tr key={index} className="border-t hover:bg-gray-50">
-                  <td className="p-3 font-medium">ISS-{2024000 + index}</td>
-                  <td className="p-3">
-                    <div>
-                      <div className="font-medium">John Doe</div>
-                      <div className="text-sm text-gray-500">MEM-{2024100 + index}</div>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <div>
-                      <div className="font-medium">The Great Gatsby</div>
-                      <div className="text-sm text-gray-500">ISBN-{9780743273 + index}</div>
-                    </div>
-                  </td>
-                  <td className="p-3">2024-03-{(index + 1).toString().padStart(2, '0')}</td>
-                  <td className="p-3">2024-03-{(index + 15).toString().padStart(2, '0')}</td>
-                  <td className="p-3">
-                    <Badge className={`
-                      ${index % 3 === 0 ? 'bg-green-100 text-green-700' : ''}
-                      ${index % 3 === 1 ? 'bg-amber-100 text-amber-700' : ''}
-                      ${index % 3 === 2 ? 'bg-purple-100 text-purple-700' : ''}
-                    `}>
-                      {index % 3 === 0 ? 'Returned' : index % 3 === 1 ? 'Overdue' : 'Issued'}
-                    </Badge>
-                  </td>
-                  <td className="p-3">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-blue-600 hover:bg-blue-50"
-                        onClick={() => handleView(index)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-amber-600 hover:bg-amber-50"
-                        onClick={() => handleEdit(index)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+            {bookData.map((book, index) => (
+  <tr key={index} className="border-t hover:bg-gray-50">
+    <td className="p-3 font-medium">{book.issue_id}</td>
+    <td className="p-3">
+      <div>
+        <div className="font-medium">{book.members.full_name}</div>
+        <div className="text-sm text-gray-500">{book.member_id}</div>
+      </div>
+    </td>
+    <td className="p-3">
+      <div>
+        <div className="font-medium">{book.title}</div>
+        <div className="text-sm text-gray-500">{book.isbn}</div>
+      </div>
+    </td>
+    <td className="p-3">{new Date(book.issue_date).toLocaleDateString()}</td>
+    <td className="p-3">{new Date(book.due_date).toLocaleDateString()}</td>
+    <td className="p-3">
+      <Badge className={` 
+        ${book.status === 'RETURNED' ? 'bg-green-100 text-green-700' : ''} 
+        ${book.status === 'OVERDUE' ? 'bg-amber-100 text-amber-700' : ''} 
+        ${book.status === 'ISSUED' ? 'bg-purple-100 text-purple-700' : ''}
+      `}>
+        {book.status === 'RETURNED' ? 'Returned' : book.status === 'OVERDUE' ? 'Overdue' : 'Issued'}
+      </Badge>
+    </td>
+    <td className="p-3">
+      <div className="flex space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-blue-600 hover:bg-blue-50"
+          onClick={() => handleView(book.issue_id)}
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-amber-600 hover:bg-amber-50"
+          onClick={() => handleEdit(book.issue_id)}
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
+      </div>
+    </td>
+  </tr>
+))}
+
             </tbody>
           </table>
         </div>

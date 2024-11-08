@@ -22,6 +22,7 @@ const StudentsPage = () => {
         
 
         const studentsResponse = await axios.get('http://localhost:8000/api/student/get-all-students');
+        console.log(studentsResponse.data.data);
         setStudentData(studentsResponse.data.data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -123,13 +124,13 @@ const StudentsPage = () => {
                 <tr key={student.id} className="border-t hover:bg-gray-50">
                   <td className="p-4 text-sm font-medium text-gray-900">{student.name}</td>
                   <td className="p-4 text-sm text-gray-600">{student.email}</td>
-                  <td className="p-4 text-sm text-gray-600">{student.enrollmentNo}</td>
+                  <td className="p-4 text-sm text-gray-600">{student.enrollment_no}</td>
                   <td className="p-4 text-sm">
                     <span className={`px-2 py-1 rounded-full text-xs ${student.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                       {student.status}
                     </span>
                   </td>
-                  <td className="p-4 text-sm text-gray-600">{student.joinDate}</td>
+                  <td className="p-4 text-sm text-gray-600">{student.join_date}</td>
                   <td className="p-4">
                     <Button variant="ghost" size="sm" className="p-2">
                       <MoreVertical className="h-4 w-4" />

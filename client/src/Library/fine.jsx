@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, IndianRupee, Receipt, AlertCircle, TrendingUp, Plus, Eye, Edit, Trash2, Filter, FileText } from 'lucide-react';
@@ -12,14 +12,46 @@ import {
 import {
   Badge,
 } from "@/components/ui/badge";
+import axios from 'axios';
 
 const FineManagement = () => {
-  const stats = {
-    totalFine: 28450,
-    collectedFine: 21675,
-    pendingFine: 6775,
-    thisMonth: 4225
+
+  const [stats, setStats] = useState({
+    totalFine: 0,
+    collectedFine: 0,
+    pendingFine: 0,
+    thisMonthFine: 0
+  });
+  
+  const [fineData, setFineData] = useState([]);
+
+  // Fetch stats data
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/fines/get-fine-stats');
+      const { totalFine,collectedFine,pendingFine,thisMonthFine} = response.data;
+      setStats({ totalFine,collectedFine,pendingFine,thisMonthFine});
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
   };
+
+  // Fetch slider data
+  const fetchFineData = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/fines/get-all-fines');
+      setFineData(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+    fetchFineData();
+  }, []);
 
   const handleNewFine = () => {
     // Handle new fine logic
@@ -29,8 +61,16 @@ const FineManagement = () => {
     // Handle edit logic
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async(id) => {
     // Handle delete logic
+    try {
+      await axios.delete(`http://localhost:8000/api/fines/delete-fine/${id}`);
+      setFineData((prevData) => prevData.filter(slide => slide.id !== id)); // Update state
+      fetchStats(); 
+      fetchFineData();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleView = (id) => {
@@ -95,7 +135,7 @@ const FineManagement = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-blue-50 to-white">
                 <div className="text-xs font-medium text-blue-600">This Month</div>
-                <div className="text-xl font-bold text-blue-700">{formatCurrency(stats.thisMonth)}</div>
+                <div className="text-xl font-bold text-blue-700">{formatCurrency(stats.thisMonthFine)}</div>
               </div>
             </div>
           </CardContent>
@@ -185,67 +225,65 @@ const FineManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {[...Array(5)].map((_, index) => (
-                <tr key={index} className="border-t hover:bg-gray-50">
-                  <td className="p-3 font-medium">FN-{2024000 + index}</td>
-                  <td className="p-3">
-                    <div>
-                      <div className="font-medium">John Doe</div>
-                      <div className="text-sm text-gray-500">LIB-{2024100 + index}</div>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <Badge variant="outline" className={
-                      index % 3 === 0 ? "text-blue-600" :
-                      index % 3 === 1 ? "text-amber-600" :
-                      "text-red-600"
-                    }>
-                      {index % 3 === 0 ? 'Late Return' :
-                       index % 3 === 1 ? 'Book Damage' :
-                       'Lost Book'}
-                    </Badge>
-                  </td>
-                  <td className="p-3 font-medium">{formatCurrency(150 * (index + 1))}</td>
-                  <td className="p-3">
-                    <Badge className={`
-                      ${index % 3 === 0 ? 'bg-green-100 text-green-700' : ''}
-                      ${index % 3 === 1 ? 'bg-amber-100 text-amber-700' : ''}
-                      ${index % 3 === 2 ? 'bg-red-100 text-red-700' : ''}
-                    `}>
-                      {index % 3 === 0 ? 'Paid' : index % 3 === 1 ? 'Partial' : 'Pending'}
-                    </Badge>
-                  </td>
-                  <td className="p-3">2024-03-{(index + 1).toString().padStart(2, '0')}</td>
-                  <td className="p-3">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-blue-600 hover:bg-blue-50"
-                        onClick={() => handleView(index)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-amber-600 hover:bg-amber-50"
-                        onClick={() => handleEdit(index)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:bg-red-50"
-                        onClick={() => handleDelete(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+            {fineData.map((fine, index) => (
+            <tr key={index} className="border-t hover:bg-gray-50">
+              <td className="p-3 font-medium">{fine.id}</td>
+              <td className="p-3">
+                <div>
+                  <div className="font-medium">{fine.member_name}</div>
+                  <div className="text-sm text-gray-500">{fine.member_id}</div>
+                </div>
+              </td>
+              <td className="p-3">
+                <Badge variant="outline" className={
+                  fine.type === 'Late Return' ? 'text-blue-600' :
+                  fine.type === 'Book Damage' ? 'text-amber-600' :
+                  'text-red-600'
+                }>
+                  {fine.fine_type}
+                </Badge>
+              </td>
+              <td className="p-3 font-medium">{formatCurrency(fine.amount)}</td>
+              <td className="p-3">
+                <Badge className={`
+                  ${fine.status === 'Paid' ? 'bg-green-100 text-green-700' : ''}
+                  ${fine.status === 'Partial' ? 'bg-amber-100 text-amber-700' : ''}
+                  ${fine.status === 'Pending' ? 'bg-red-100 text-red-700' : ''}
+                `}>
+                  {fine.status}
+                </Badge>
+              </td>
+              <td className="p-3">{fine.due_date}</td>
+              <td className="p-3">
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-blue-600 hover:bg-blue-50"
+                    onClick={() => handleView(fine.id)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-amber-600 hover:bg-amber-50"
+                    onClick={() => handleEdit(fine.id)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 hover:bg-red-50"
+                    onClick={() => handleDelete(fine.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          ))}
             </tbody>
           </table>
         </div>

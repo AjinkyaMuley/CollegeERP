@@ -1,67 +1,52 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, Bell, FileText, Megaphone, PenSquare, Trash2, Eye, CheckCircle, Clock } from 'lucide-react';
+import axios from 'axios';
 
 const NewsNoticePage = () => {
-  const stats = {
-    notices: 16,
-    tenders: 0,
-    advertisements: 0
-  };
 
-  const newsData = [
-    { 
-      id: 1, 
-      title: "Admission Open for B.Tech Program 2024-25", 
-      category: "Notice",
-      publishDate: "2024-11-01",
-      status: "Published",
-      department: "Academics",
-      priority: "High",
-      content: "Applications are invited for admission to B.Tech Programs at IIIT Nagpur for the academic year 2024-25. Admission through JEE Mains score."
-    },
-    { 
-      id: 2, 
-      title: "Campus Recruitment Drive 2024", 
-      category: "Notice",
-      publishDate: "2024-11-01",
-      status: "Published",
-      department: "Training & Placement",
-      priority: "High",
-      content: "Major IT companies visiting campus for recruitment. Open for final year B.Tech students."
-    },
-    { 
-      id: 3, 
-      title: "Laboratory Equipment Procurement Tender", 
-      category: "Tender",
-      publishDate: "2024-10-31",
-      status: "Pending",
-      department: "Administration",
-      priority: "Medium",
-      content: "Tender notice for procurement of advanced lab equipment for Computer Science department."
-    },
-    { 
-      id: 4, 
-      title: "Faculty Positions Available", 
-      category: "Advertisement",
-      publishDate: "2024-10-30",
-      status: "Published",
-      department: "HR",
-      priority: "Medium",
-      content: "IIIT Nagpur is hiring faculty positions in various departments. Ph.D. holders with relevant experience may apply."
-    },
-    { 
-      id: 5, 
-      title: "International Conference on Emerging Technologies", 
-      category: "Notice",
-      publishDate: "2024-10-29",
-      status: "Published",
-      department: "Research",
-      priority: "High",
-      content: "IIIT Nagpur is organizing an international conference on emerging technologies in December 2024."
+  const [newsStats,setNewsStats]=useState({
+    total_Advertisements:0 ,total_Notices:0 ,total_Tenders:0
+  });
+  const [newsData,setNewsData]=useState([]);
+
+  const fetchNewsStats=async()=>{
+    try {
+      const response=await axios.get('http://localhost:8000/api/news/get-news-stats');
+      const {total_Advertisements ,total_Notices ,total_Tenders}=response.data;
+      setNewsStats({total_Advertisements ,total_Notices ,total_Tenders});
+    } catch (error) {
+      console.log(error);
     }
-  ];
+  }
+
+  const fetchNewsData=async()=>{
+    try {
+      const response=await axios.get('http://localhost:8000/api/news//get-all-news');
+      console.log(response);
+      setNewsData(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  useEffect(()=>{
+    fetchNewsStats();
+    fetchNewsData();
+  },[]);
+
+  // const newsData = [
+  //   { 
+  //     id: 1, 
+  //     title: "Admission Open for B.Tech Program 2024-25", 
+  //     category: "Notice",
+  //     publishDate: "2024-11-01",
+  //     status: "Published",
+  //     department: "Academics",
+  //     priority: "High",
+  //     content: "Applications are invited for admission to B.Tech Programs at IIIT Nagpur for the academic year 2024-25. Admission through JEE Mains score."
+  //   }
+  // ];
 
   const handleNewArticle = () => {
     // Handle new article logic
@@ -96,7 +81,7 @@ const NewsNoticePage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-blue-50 to-white">
                 <div className="text-sm font-medium text-blue-600">Notices</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-blue-700">{stats.notices}</div>
+                  <div className="text-2xl font-bold text-blue-700">{newsStats.total_Notices}</div>
                 </div>
               </div>
             </div>
@@ -112,7 +97,7 @@ const NewsNoticePage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-amber-50 to-white">
                 <div className="text-sm font-medium text-amber-600">Tenders</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-amber-700">{stats.tenders}</div>
+                  <div className="text-2xl font-bold text-amber-700">{newsStats.total_Tenders}</div>
                 </div>
               </div>
             </div>
@@ -128,7 +113,7 @@ const NewsNoticePage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-green-50 to-white">
                 <div className="text-sm font-medium text-green-600">Advertisements</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-green-700">{stats.advertisements}</div>
+                  <div className="text-2xl font-bold text-green-700">{newsStats.total_Advertisements}</div>
                 </div>
               </div>
             </div>
@@ -222,7 +207,7 @@ const NewsNoticePage = () => {
                     </span>
                   </td>
                   <td className="p-4 text-sm text-gray-600">{article.department}</td>
-                  <td className="p-4 text-sm text-gray-600">{article.publishDate}</td>
+                  <td className="p-4 text-sm text-gray-600">{article.publish_date}</td>
                   <td className="p-4 text-sm">
                     <span className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 w-fit ${
                       article.status === 'Published' ? 'bg-green-100 text-green-800' :
