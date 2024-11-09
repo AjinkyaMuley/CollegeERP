@@ -11,6 +11,9 @@ import bookIssueRouter from './routes/bookIssueRoutes.js'
 import sliderRoutes from './routes/sliderRoutes.js'
 import fineRoutes from './routes/fineRoutes.js'
 import inventoryRoutes from './routes/inventroryRoutes.js'
+import memberRouter from './routes/memberRoutes.js'
+import attendanceRouter from './routes/attendanceRoutes.js'
+import gradeRouter from './routes/gradeRoutes.js'
 
 dotenv.config()
 const app = express();
@@ -29,6 +32,9 @@ app.use('/api/bookissues',bookIssueRouter);
 app.use('/api/sliders',sliderRoutes);
 app.use('/api/fines',fineRoutes);
 app.use('/api/books',inventoryRoutes);
+app.use('/api/members',memberRouter);
+app.use('/api/attendance',attendanceRouter);
+app.use('/api/grades',gradeRouter);
 
 app.listen(process.env.PORT,() => {
     console.log("Server running on PORT " + process.env.PORT);
