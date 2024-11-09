@@ -3,9 +3,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, Bell, FileText, Megaphone, PenSquare, Trash2, Eye, CheckCircle, Clock } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const NewsNoticePage = () => {
 
+  const navigate=useNavigate();
   const [newsStats,setNewsStats]=useState({
     total_Advertisements:0 ,total_Notices:0 ,total_Tenders:0
   });
@@ -24,7 +26,7 @@ const NewsNoticePage = () => {
   const fetchNewsData=async()=>{
     try {
       const response=await axios.get('http://localhost:8000/api/news//get-all-news');
-      console.log(response);
+      // console.log(response);
       setNewsData(response.data);
     } catch (error) {
       console.log(error);
@@ -50,22 +52,45 @@ const NewsNoticePage = () => {
 
   const handleNewArticle = () => {
     // Handle new article logic
+    navigate("/website/news/add-new-article");
   };
 
   const handleEdit = (id) => {
     // Handle edit logic
+    navigate("/website/news/edit-news", { state: { newsId: id } });
+
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     // Handle delete logic
+    try {
+      const response= await axios.delete(`http://localhost:8000/api/news/delete-news/${id}`,{});
+      if(response.status===200){
+        fetchNewsStats();
+        fetchNewsData();
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleApprove = (id) => {
+  const handleApprove = async (id) => {
     // Handle approve logic
+    try {
+      const response= await axios.put(`http://localhost:8000/api/news/approve-news/${id}`,{});
+      if(response.status===200){
+        fetchNewsStats();
+        fetchNewsData();
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleView = (id) => {
     // Handle view logic
+    navigate("/website/news/view-news", { state: { newsId: id } });
+
   };
 
   return (

@@ -3,8 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, Users, Building2, UserCheck, UserX, Mail, PenSquare, Trash2, Eye, CheckCircle } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const FacultyPage = () => {
+  const navigate=useNavigate();
   const [facultyStats, setFacultyStats] = useState({
     totalDepartments: 0,
     departments: [],
@@ -36,7 +38,7 @@ const FacultyPage = () => {
     try{
       const response=await axios.get('http://localhost:8000/api/faculty/get-all-faculty');
       setFacultyData(response.data);
-      console.log(response.data);
+      // console.log(response.data);
 
     }catch(error){
       console.error('Error fetching faculty data',error);
@@ -50,10 +52,13 @@ const FacultyPage = () => {
 
   const handleNewFaculty = () => {
     // Handle new faculty logic
+    navigate("/website/faculty/add-new");
+
   };
 
   const handleEdit = (id) => {
     // Handle edit logic
+    navigate("/website/faculty/edit-faculty", { state: { facultyId: id } });
   };
 
   const handleDelete = async(id) => {
@@ -61,7 +66,7 @@ const FacultyPage = () => {
       await axios.delete(`http://localhost:8000/api/faculty/delete-faculty/${id}`);
       setFacultyData(facultyData.filter((stream) => stream.id !== id));
       fetchFacultyStats();
-      alert('Stream deleted successfully');
+      alert('Faculty deleted successfully');
     } catch (error) {
       console.error('Error deleting stream:', error);
       alert('Failed to delete the stream');
@@ -70,6 +75,8 @@ const FacultyPage = () => {
 
   const handleView = (id) => {
     // Handle view logic
+    navigate("/website/faculty/view-faculty", { state: { facultyId: id } });
+
   };
 
   const departments = [

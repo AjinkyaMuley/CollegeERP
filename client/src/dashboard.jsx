@@ -195,7 +195,7 @@ const Dashboard = () => {
         const response = await axios.get('http://localhost:8000/api/fines/get-fine-stats');
         const { totalFine,collectedFine,pendingFine,thisMonthFine} = response.data;
         setFineStats({ totalFine,collectedFine,pendingFine,thisMonthFine});
-        console.log(response.data);
+        // console.log(response.data);
       } catch (error) {
         console.log(error);
       }
@@ -266,10 +266,10 @@ const Dashboard = () => {
       'Active Members': 2
     },
     fineCollection: {
-      'Total Fine': finestats.totalFine,
-      'Collected': finestats.collectedFine,
-      'Pending': finestats.pendingFine,
-      'This Month': finestats.thisMonthFine
+      'Total Fine': `₹ ${finestats.totalFine}`,
+      'Collected': `₹ ${finestats.collectedFine}`,
+      'Pending': `₹ ${finestats.pendingFine}`,
+      'This Month': `₹ ${finestats.thisMonthFine}`
     },
     bookIssued: {
       'Total Issues': bookStats.totalIssues,
@@ -352,7 +352,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <DashboardCard title="Total Inventory" color="red" items={libraryStats.inventory} link="/library/inventory" />
         <DashboardCard title="Total Members" color="blue" items={libraryStats.members} link="/library/member" />
-        <DashboardCard title="Fine Collection Stats in Rs." color="green" items={libraryStats.fineCollection} link="/library/fine" />
+        <DashboardCard title="Fine Collection Stats" color="green" items={libraryStats.fineCollection} link="/library/fine" />
         <DashboardCard title="Book Issued Stats" color="yellow" items={libraryStats.bookIssued} link="/library/bookissue" />
       </div>
 

@@ -10,9 +10,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const LibraryManagement = () => {
 
+  const navigate=useNavigate();
   const [stats, setStats] = useState({
     availableBooks: 0,
 issuedBooks: 0,
@@ -52,10 +54,13 @@ totalCategories: 0
 
   const handleNewBook = () => {
     // Handle new book logic
+    navigate("/library/inventory/add-new");
   };
 
   const handleEdit = (id) => {
     // Handle edit logic
+    navigate("/library/inventory/edit", { state: { isbn: id } });
+
   };
 
   const handleDelete = async (id) => {
@@ -71,6 +76,8 @@ totalCategories: 0
 
   const handleView = (id) => {
     // Handle view logic
+    navigate("/library/inventory/view", { state: { isbn: id } });
+
   };
 
   return (

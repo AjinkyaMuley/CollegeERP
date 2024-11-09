@@ -13,9 +13,11 @@ import {
   Badge,
 } from "@/components/ui/badge";
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const BookIssueStats = () => {
 
+  const navigate=useNavigate();
   const [bookStats,setBookStats]=useState({
     totalIssues: 0,
     currentMonth: 0,
@@ -57,14 +59,17 @@ const BookIssueStats = () => {
 
   const handleNewIssue = () => {
     // Handle new issue logic
+    navigate("/library/bookissue/add");
   };
 
   const handleEdit = (id) => {
     // Handle edit logic
+    navigate("/library/bookissue/edit",{state:{id:id}});
   };
 
   const handleView = (id) => {
     // Handle view logic
+    navigate("/library/bookissue/view",{state:{id:id}});
   };
 
   return (

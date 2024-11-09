@@ -13,9 +13,11 @@ import {
   Badge,
 } from "@/components/ui/badge";
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const FineManagement = () => {
-
+  
+  const navigate=useNavigate();
   const [stats, setStats] = useState({
     totalFine: 0,
     collectedFine: 0,
@@ -55,10 +57,14 @@ const FineManagement = () => {
 
   const handleNewFine = () => {
     // Handle new fine logic
+    navigate("/library/fine/add-new");
+
   };
 
   const handleEdit = (id) => {
     // Handle edit logic
+    navigate("/library/fine/edit", { state: { fineId: id } });
+
   };
 
   const handleDelete = async(id) => {
@@ -75,6 +81,8 @@ const FineManagement = () => {
 
   const handleView = (id) => {
     // Handle view logic
+    navigate("/library/fine/view", { state: { fineId: id } });
+
   };
 
   const formatCurrency = (amount) => {
