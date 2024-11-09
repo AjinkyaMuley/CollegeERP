@@ -145,7 +145,7 @@ export const approveNews = async (req, res) => {
         const { data, error } = await supabase
             .from('news')
             .update({
-                status: 'Approved',
+                status: 'Published',
                 updated_at: new Date()
             })
             .eq('id', id)

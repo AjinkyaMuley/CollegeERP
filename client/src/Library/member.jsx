@@ -15,10 +15,10 @@ import {
 
 const MemberManagement = () => {
   const stats = {
-    totalMembers: 4892,
-    studentMembers: 4650,
-    facultyMembers: 242,
-    activeMembers: 3876
+    totalMembers: 5,
+    studentMembers: 3,
+    facultyMembers: 2,
+    activeMembers: 2
   };
 
   const handleNewMember = () => {

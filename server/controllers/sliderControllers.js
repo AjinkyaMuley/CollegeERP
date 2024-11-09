@@ -73,7 +73,7 @@ export const deleteSliderById = async (req, res) => {
 export const getSliderStats = async (req, res) => {
   try {
     const { data: totalSliders } = await supabase.from('slider').select('id');
-    const { data: publishedSliders } = await supabase.from('slider').select('id').eq('status', 'published');
+    const { data: publishedSliders } = await supabase.from('slider').select('id').eq('status', 'Published');
     const { data: unpublishedSliders } = await supabase.from('slider').select('id').eq('status', 'unpublished');
 
     const stats = {

@@ -71,9 +71,9 @@ const Dashboard = () => {
   });
 
   const [newsStats, setNewsStats] = useState({
-    total_notices: 0,
-    total_tenders: 0,
-    total_advertisements: 0,
+    total_Advertisements:0 ,
+    total_Notices:0 ,
+    total_Tenders:0
   });
 
   const [facultyStats, setFacultyStats] = useState({
@@ -82,6 +82,27 @@ const Dashboard = () => {
     totalFaculties: 0,
     activeFaculties: 0,
     disabledFaculties: 0,
+  });
+
+  const [inventoryStats, setInventoryStats] = useState({
+    availableBooks: 0,
+    issuedBooks: 0,
+    totalBooks: 0,
+    totalCategories: 0
+  });
+
+  const [finestats, setFineStats] = useState({
+    totalFine: 0,
+    collectedFine: 0,
+    pendingFine: 0,
+    thisMonthFine: 0
+  });
+
+  const [bookStats,setBookStats]=useState({
+    totalIssues: 0,
+    currentMonth: 0,
+    overdueBooks: 0,
+    returnsToday: 0
   });
 
   useEffect(() => {
@@ -130,18 +151,16 @@ const Dashboard = () => {
       }
     };
 
-    const fetchNewsStats = async () => {
+    const fetchNewsStats=async()=>{
       try {
-        const response = await axios.get('http://localhost:8000/api/news/get-news-stats'); // replace with your endpoint
-        const { total_notices, total_tenders, total_advertisements } = response.data;
-
-        setNewsStats({
-          total_notices, total_tenders, total_advertisements
-        })
-     } catch (error) {
-        console.error('Error fetching stats:', error);
+        const response=await axios.get('http://localhost:8000/api/news/get-news-stats');
+        const {total_Advertisements ,total_Notices ,total_Tenders}=response.data;
+        setNewsStats({total_Advertisements ,total_Notices ,total_Tenders});
+      } catch (error) {
+        console.log(error);
       }
-    };
+    }
+  
 
     const fetchFacultyStats = async () => {
       try {
@@ -160,6 +179,47 @@ const Dashboard = () => {
       }
     };
 
+    const fetchInventoryStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/books//get-book-stats');
+        const {  availableBooks,issuedBooks,totalBooks,totalCategories } = response.data;
+        setInventoryStats({  availableBooks,issuedBooks,totalBooks,totalCategories });
+        // console.log(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const fetchFineStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/fines/get-fine-stats');
+        const { totalFine,collectedFine,pendingFine,thisMonthFine} = response.data;
+        setFineStats({ totalFine,collectedFine,pendingFine,thisMonthFine});
+        // console.log(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const fetchBookStats=async()=>{
+      try {
+        const response=await axios.get('http://localhost:8000/api/bookissues/get-issue-stats');
+        const {currentMonthIssues,
+          dueToday,
+          overdueIssues,
+          totalIssues}=response.data;
+        setBookStats({totalIssues:totalIssues,
+          currentMonth:currentMonthIssues,
+          overdueBooks:overdueIssues,
+          returnsToday:dueToday});
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  
+    fetchBookStats();
+    fetchFineStats();
+    fetchInventoryStats();
     fetchFacultyStats();
     fetchNewsStats();
     fetchAdmissionStats();
@@ -194,28 +254,28 @@ const Dashboard = () => {
 
   const libraryStats = {
     inventory: {
-      'Total Books': 15420,
-      'Available Books': 14238,
-      'Issued Books': 1182,
-      'Categories': 42
+      'Total Books': inventoryStats.totalBooks,
+      'Available Books': inventoryStats.availableBooks,
+      'Issued Books': inventoryStats.issuedBooks,
+      'Categories': inventoryStats.totalCategories
     },
     members: {
-      'Total Members': 4892,
-      'Student Members': 4650,
-      'Faculty Members': 242,
-      'Active Members': 3876
+      'Total Members': 5,
+      'Student Members': 3,
+      'Faculty Members': 2,
+      'Active Members': 2
     },
     fineCollection: {
-      'Total Fine': '₹28,450',
-      'Collected': '₹21,675',
-      'Pending': '₹6,775',
-      'This Month': '₹4,225'
+      'Total Fine': `₹ ${finestats.totalFine}`,
+      'Collected': `₹ ${finestats.collectedFine}`,
+      'Pending': `₹ ${finestats.pendingFine}`,
+      'This Month': `₹ ${finestats.thisMonthFine}`
     },
     bookIssued: {
-      'Total Issues': 1182,
-      'Current Month': 145,
-      'Overdue Books': 73,
-      'Returns Today': 12
+      'Total Issues': bookStats.totalIssues,
+      'Current Month': bookStats.currentMonth,
+      'Overdue Books': bookStats.overdueBooks,
+      'Returns Today': bookStats.returnsToday
     }
   };
 
@@ -238,9 +298,9 @@ const Dashboard = () => {
 
   const websiteStats = {
     news: {
-      'Notices': newsStats.total_notices,
-      'Tender': newsStats.total_tenders,
-      'Advertisement': newsStats.total_advertisements
+      'Notices': newsStats.total_Notices,
+      'Tender': newsStats.total_Tenders,
+      'Advertisement': newsStats.total_Advertisements
     },
     slider: {
       'Total Slides': 5,

@@ -3,8 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, DollarSign, Calendar, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const PaymentPage = () => {
+  const navigate=useNavigate();
   const [stats, setStats] = useState({
     totalEntries: 0,
     paidEntries: 0,
@@ -36,7 +38,7 @@ const PaymentPage = () => {
     try {
       const response = await axios.get('http://localhost:8000/api/payment/get-all-payments');
       setPaymentData(response.data);
-      console.log(response.data);
+      // console.log(response.data);
     } catch (error) {
       console.error("Error fetching payment data:", error);
     }
@@ -44,18 +46,16 @@ const PaymentPage = () => {
 
   const handleNewPayment = () => {
     // Handle new payment logic
-  };
+    navigate("/admin/payment/new-payment")
 
-  const handleViewDetails = (id) => {
-    // Handle view details logic
   };
-
   const handleMarkAsPaid = async(id) => {
     try {
       // Call API to mark payment as paid
       const response = await axios.put(`http://localhost:8000/api/payment/mark-payment-paid/${id}`);
       if (response) {
         fetchPaymentData();
+        fetchStats();
       } else {
         console.error("Failed to mark as paid");
       }
@@ -205,14 +205,14 @@ const PaymentPage = () => {
                   <td className="p-4 text-sm text-gray-600">{payment.payment_method}</td>
                   <td className="p-4">
                     <div className="flex space-x-2">
-                      <Button
+                      {/* <Button
                         variant="outline"
                         size="sm"
                         className="text-purple-600 hover:bg-purple-50"
                         onClick={() => handleViewDetails(payment.id)}
                       >
                         View
-                      </Button>
+                      </Button> */}
                       {payment.status === 'Unpaid' && (
                         <Button
                           variant="outline"

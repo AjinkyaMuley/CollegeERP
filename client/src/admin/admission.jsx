@@ -3,9 +3,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Search, MoreVertical, CheckCircle, XCircle, Clock } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const AdmissionsPage = () => {
 
+  const navigate=useNavigate();
   const [stats,setStats]=useState(
     {
       total_applications: 0,
@@ -29,6 +31,7 @@ const AdmissionsPage = () => {
       try {
         const response = await axios.get('http://localhost:8000/api/admissions/get-all-admissions');
         setAdmissionsData(response.data);
+        // console.log(response.data);
       } catch (error) {
         setError('Error fetching admissions data');
         console.error('Error fetching admissions:', error);
@@ -41,31 +44,60 @@ const AdmissionsPage = () => {
   },[])
 
   const handleNewApplication = () => {
-    // Handle new application logic
+    navigate("/admin/admission/new-application");
   };
 
   const handleViewDetails = (id) => {
     // Handle view details logic
+    navigate("/admin/admission/view-application", { state: { admissionId: id } });
   };
 
-  const handleApprove = async (id) => {
+  const handleApprove = async (id, application_name) => {
     try {
-      const response = await axios.put(`http://localhost:8000/api/admissions/approve-admission/${id}`);
-      // Update the status of the application in the state
-      const updatedAdmissionsData = admissionsData.map(application => 
-        application.id === id ? { ...application, status: 'Approved' } : application
-      );
-      setAdmissionsData(updatedAdmissionsData);
-      setStats((prevStats) => ({
-        ...prevStats,
-        approved: prevStats.approved + 1,
-        pending: prevStats.pending - 1,
-      }));
+        const response1 = await axios.put(`http://localhost:8000/api/admissions/approve-admission/${id}`);
+        
+        // Update the status of the application in the state
+        const updatedAdmissionsData = admissionsData.map(application => 
+            application.id === id ? { ...application, status: 'Approved' } : application
+        );
+        setAdmissionsData(updatedAdmissionsData);
+        setStats((prevStats) => ({
+            ...prevStats,
+            approved: prevStats.approved + 1,
+            pending: prevStats.pending - 1,
+        }));
+        
+        // Prepare data for the new student
+        const studentData = {
+          name: application_name,
+          email: `BT${new Date().getFullYear().toString().slice(-2)}${stats.total_applications + 1}@iiitn.ac.in`,
+          enrollment_no: `BT${new Date().getFullYear().toString().slice(-2)}${stats.total_applications + 1}`,
+          status: 'Active',
+          join_date: new Date().toISOString().split('T')[0]
+      };
       
+
+        // Separate try block for creating the student
+        try {
+            const response2 = await axios.post('http://localhost:8000/api/student/add-student', studentData, {
+                headers: { 'Content-Type': 'application/json' }
+            });
+            console.log('Student created successfully:', response2.data.data);
+            return response2.data.data;
+        } catch (error) {
+            if (error.response) {
+                console.error('Error creating student:', error.response.data.error);
+                throw new Error(error.response.data.error || 'Failed to create student');
+            } else {
+                console.error('Error creating student:', error.message);
+                throw error;
+            }
+        }
     } catch (error) {
-      console.error('Error approving application:', error);
+        console.error('Error approving application:', error);
     }
-  };
+};
+
 
   const handleReject = async (id) => {
     try {
@@ -127,9 +159,9 @@ const AdmissionsPage = () => {
                 <GraduationCap className="h-8 w-8 text-white" />
               </div>
               <div className="p-4 flex-1 bg-gradient-to-br from-red-50 to-white">
-                <div className="text-sm font-medium text-red-600">Unapproved</div>
+                <div className="text-sm font-medium text-red-600">Rejected</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-red-700">{stats.pending}</div>
+                  <div className="text-2xl font-bold text-red-700">{stats.total_applications-stats.approved-stats.pending}</div>
                 </div>
               </div>
             </div>
@@ -145,7 +177,7 @@ const AdmissionsPage = () => {
               <div className="p-4 flex-1 bg-gradient-to-br from-red-50 to-white">
                 <div className="text-sm font-medium text-red-600">Pending</div>
                 <div className="flex items-baseline mt-1">
-                  <div className="text-2xl font-bold text-red-700">{stats.total_applications-stats.approved-stats.pending}</div>
+                  <div className="text-2xl font-bold text-red-700">{stats.pending}</div>
                 </div>
               </div>
             </div>
@@ -224,7 +256,7 @@ const AdmissionsPage = () => {
                 <tr key={application.id} className="border-t hover:bg-gray-50">
                   <td className="p-4 text-sm font-medium text-gray-900">{application.name}</td>
                   <td className="p-4 text-sm text-gray-600">{application.course}</td>
-                  <td className="p-4 text-sm text-gray-600">{application.applicationDate}</td>
+                  <td className="p-4 text-sm text-gray-600">{application.application_date}</td>
                   <td className="p-4 text-sm">
                     <span className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 w-fit ${
                       application.status === 'Approved' ? 'bg-green-100 text-green-800' :
@@ -237,7 +269,7 @@ const AdmissionsPage = () => {
                       {application.status}
                     </span>
                   </td>
-                  <td className="p-4 text-sm text-gray-600">{application.lastUpdated}</td>
+                  <td className="p-4 text-sm text-gray-600">{application.last_updated}</td>
                   <td className="p-4">
                     <div className="flex space-x-2">
                       <Button
@@ -254,7 +286,7 @@ const AdmissionsPage = () => {
                             variant="outline"
                             size="sm"
                             className="text-green-600 hover:bg-green-50"
-                            onClick={() => handleApprove(application.id)}
+                            onClick={() => handleApprove(application.id,application.name)}
                           >
                             Approve
                           </Button>

@@ -4,8 +4,10 @@ import { Card, CardContent } from "@/components/ui/card"; // Fixed the typo here
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, Play, Users, Radio, Calendar } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Stream = () => {
+  const navigate=useNavigate();
   const [streamStats, setStreamStats] = useState({
     main_streams: 0,
     total_streams: 0,
@@ -27,7 +29,7 @@ const Stream = () => {
     try {
       const response = await axios.get('http://localhost:8000/api/stream/get-all-stream-data');
       setStreamData(response.data.streamData.data);
-      // console.log(response.data.streamData.data);
+      console.log(response.data);
     } catch (error) {
       console.error('Error fetching stream stats:', error);
     }
@@ -40,6 +42,7 @@ const Stream = () => {
 
   const handleAddStream = () => {
     // Logic to add stream (e.g., open a modal)
+    navigate("/admin/stream/add-stream")
   };
 
   const handlePlay = (id) => {
@@ -102,19 +105,19 @@ const Stream = () => {
               <th className="p-4 text-left text-sm font-medium text-gray-500">No.</th>
               <th className="p-4 text-left text-sm font-medium text-gray-500">Name</th>
               <th className="p-4 text-left text-sm font-medium text-gray-500">Type</th>
-              <th className="p-4 text-left text-sm font-medium text-gray-500">Sessions</th>
+              {/* <th className="p-4 text-left text-sm font-medium text-gray-500">Sessions</th> */}
               <th className="p-4 text-left text-sm font-medium text-gray-500">Status</th>
               <th className="p-4 text-left text-sm font-medium text-gray-500">Last Updated</th>
               <th className="p-4 text-left text-sm font-medium text-gray-500">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {streamData.map(({ id, name, type, sessions, status, lastUpdated }, index) => (
+            {streamData.map(({ id, name, type, status, last_updated }, index) => (
               <tr key={id} className="border-t hover:bg-gray-50">
                 <td className="p-4 text-sm text-gray-600">{index + 1}</td>
                 <td className="p-4 text-sm text-gray-600 font-medium">{name}</td>
                 <td className="p-4 text-sm text-gray-600">{type}</td>
-                <td className="p-4 text-sm text-gray-600">{sessions}</td>
+                {/* <td className="p-4 text-sm text-gray-600">{sessions}</td> */}
                 <td className="p-4 text-sm">
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     status === 'Active' ? 'bg-green-100 text-green-800' :
@@ -124,7 +127,7 @@ const Stream = () => {
                     {status}
                   </span>
                 </td>
-                <td className="p-4 text-sm text-gray-600">{lastUpdated}</td>
+                <td className="p-4 text-sm text-gray-600">{last_updated}</td>
                 <td className="p-4">
                   <div className="flex space-x-2">
                     <Button variant="outline" size="sm" className="p-2 hover:bg-green-50" onClick={() => handlePlay(id)}>

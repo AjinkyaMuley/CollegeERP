@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, Book, BookOpen, BookX, Tags, Plus, Eye, Edit, Trash2, Filter } from 'lucide-react';
@@ -9,29 +9,75 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const LibraryManagement = () => {
-  const stats = {
-    totalBooks: 15420,
-    availableBooks: 14238,
-    issuedBooks: 1182,
-    categories: 42
+
+  const navigate=useNavigate();
+  const [stats, setStats] = useState({
+    availableBooks: 0,
+issuedBooks: 0,
+totalBooks: 0,
+totalCategories: 0
+  });
+  
+  const [bookData, setBookData] = useState([]);
+
+  // Fetch stats data
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/books//get-book-stats');
+      const {  availableBooks,issuedBooks,totalBooks,totalCategories } = response.data;
+      setStats({  availableBooks,issuedBooks,totalBooks,totalCategories });
+      // console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
   };
+
+  // Fetch slider data
+  const fetchBookData = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/books/get-all-books');
+      setBookData(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+    fetchBookData();
+  }, []);
 
   const handleNewBook = () => {
     // Handle new book logic
+    navigate("/library/inventory/add-new");
   };
 
   const handleEdit = (id) => {
     // Handle edit logic
+    navigate("/library/inventory/edit", { state: { isbn: id } });
+
   };
 
-  const handleDelete = (id) => {
-    // Handle delete logic
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/books/delete-book/${id}`);
+      setBookData((prevData) => prevData.filter(slide => slide.id !== id)); // Update state
+      fetchStats(); // Re-fetch stats after delete
+      fetchBookData();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleView = (id) => {
     // Handle view logic
+    navigate("/library/inventory/view", { state: { isbn: id } });
+
   };
 
   return (
@@ -88,7 +134,7 @@ const LibraryManagement = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-blue-50 to-white">
                 <div className="text-xs font-medium text-blue-600">Categories</div>
-                <div className="text-xl font-bold text-blue-700">{stats.categories}</div>
+                <div className="text-xl font-bold text-blue-700">{stats.totalCategories}</div>
               </div>
             </div>
           </CardContent>
@@ -159,51 +205,53 @@ const LibraryManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {[...Array(5)].map((_, index) => (
-                <tr key={index} className="border-t hover:bg-gray-50">
-                  <td className="p-3 font-medium">The Great Book {index + 1}</td>
-                  <td className="p-3">Author Name</td>
-                  <td className="p-3">Fiction</td>
-                  <td className="p-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      index % 2 === 0 
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-amber-100 text-amber-700'
-                    }`}>
-                      {index % 2 === 0 ? 'Available' : 'Issued'}
-                    </span>
-                  </td>
-                  <td className="p-3">978-3-16-148410-{index}</td>
-                  <td className="p-3">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-blue-600 hover:bg-blue-50"
-                        onClick={() => handleView(index)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-amber-600 hover:bg-amber-50"
-                        onClick={() => handleEdit(index)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:bg-red-50"
-                        onClick={() => handleDelete(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+            {bookData.map((book, index) => (
+            <tr key={index} className="border-t hover:bg-gray-50">
+              <td className="p-3 font-medium">{book.title}</td>
+              <td className="p-3">{book.author}</td>
+              <td className="p-3">{book.category}</td>
+              <td className="p-3">
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    book.status === 'AVAILABLE'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-amber-100 text-amber-700'
+                  }`}
+                >
+                  {book.status === 'AVAILABLE' ? 'Available' : 'Issued'}
+                </span>
+              </td>
+              <td className="p-3">{book.isbn}</td>
+              <td className="p-3">
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-blue-600 hover:bg-blue-50"
+                    onClick={() => handleView(book.isbn)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-amber-600 hover:bg-amber-50"
+                    onClick={() => handleEdit(book.isbn)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 hover:bg-red-50"
+                    onClick={() => handleDelete(book.isbn)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          ))}
             </tbody>
           </table>
         </div>
