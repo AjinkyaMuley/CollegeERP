@@ -9,10 +9,12 @@ import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const ViewStudent = ({ isEditPossible, onUpdateSuccess }) => {
+const ViewStudent = ({ isEditPossible, onUpdateSuccess,studentId=null }) => {
   const location = useLocation();
   const navigate=useNavigate();
-  const { studentId } = location.state || {};
+  if(studentId===null){
+   studentId  = location.state || {};
+  }
   const [formData, setFormData] = useState({
     name: '',
     email: '',

@@ -26,7 +26,7 @@ const FacultyPage = () => {
         totalDepartments,
         departments,
         totalFaculties,
-        activeFaculties,
+        activeFaculties, 
         disabledFaculties,
       });
     } catch (error) {

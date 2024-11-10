@@ -26,6 +26,7 @@ const BookIssueForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      console.log(formData)
       const response = await axios.post('http://localhost:8000/api/bookissues/add-new-issue', formData);
       console.log('Form submitted:', response.data);
       

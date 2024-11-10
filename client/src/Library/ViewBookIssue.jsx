@@ -12,10 +12,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BookOpen, User, Calendar, AlertCircle } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const ViewBookIssue = ({ isEditPossible }) => {
 
+  const navigate=useNavigate();
     const location=useLocation();
     const {id}=location.state ||{};
   const [formData, setFormData] = useState({
@@ -48,6 +49,7 @@ const ViewBookIssue = ({ isEditPossible }) => {
       try {
         await axios.put(`http://localhost:8000/api/bookissues/edit-book-issue/${id}`, formData);
         alert('Book issue details updated successfully');
+        navigate("/library/bookissue");
       } catch (error) {
         console.error('Error updating book issue details:', error);
         alert('Failed to update book issue details');

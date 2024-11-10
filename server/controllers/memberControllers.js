@@ -5,7 +5,7 @@ const supabase = createClient('https://bpzcafaystrwmukblixj.supabase.co', 'eyJhb
 // Add a new member
 export const addMember = async (req, res) => {
     try {
-        const { full_name, email, phone } = req.body;
+        const { full_name, email, phone ,status,type} = req.body;
         
         // Generate member_id with MEM- prefix and random string
         const member_id = `MEM-${Math.random().toString(36).substr(2, 9)}`;
@@ -16,7 +16,9 @@ export const addMember = async (req, res) => {
                 member_id,
                 full_name,
                 email,
-                phone
+                phone,
+                status,
+                type
             }])
             .select();
 

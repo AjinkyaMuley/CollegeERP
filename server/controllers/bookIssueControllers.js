@@ -38,7 +38,8 @@ export const addNewBookIssue = async (req, res) => {
 export const editBookIssue = async (req, res) => {
     try {
         const { issue_id } = req.params;
-        const { member_id, isbn, issue_date, due_date, return_date, status } = req.body;
+        const { member_id, isbn, issue_date, due_date, status } = req.body;
+        const return_date=due_date;
 
         const { data, error } = await supabase
             .from('book_issues')

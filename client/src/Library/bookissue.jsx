@@ -118,7 +118,7 @@ const BookIssueStats = () => {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden">
+        {/* <Card className="overflow-hidden">
           <CardContent className="p-0">
             <div className="flex items-center">
               <div className="bg-gradient-to-br from-green-500 to-green-600 p-3 flex items-center justify-center">
@@ -130,7 +130,7 @@ const BookIssueStats = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Book Issues Management Section */}

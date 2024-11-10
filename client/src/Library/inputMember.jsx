@@ -1,30 +1,43 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const MemberForm = () => {
+  const navigate=useNavigate();
   const [formData, setFormData] = useState({
-    memberId: '',
-    name: '',
+    full_name: '',
+    email: '',
     type: '',
     status: '',
-    booksIssued: '0',
-    maxBooks: '5',  // Default max books limit
-    joinDate: ''
+    phone: '',
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    
-    // Clear form after submission
-    setFormData({
-      memberId: '',
-      name: '',
-      type: '',
-      status: '',
-      booksIssued: '0',
-      maxBooks: '5',
-      joinDate: ''
-    });
+    try {
+      const response = await axios.post("http://localhost:8000/api/members/add-member", {
+        full_name: formData.full_name,
+        email: formData.email,
+        phone: formData.phone,
+        status: formData.status,
+        type: formData.type
+      });
+      // console.log("Member added successfully:", response.data);
+
+      // Reset form after successful submission
+      alert("Member added successfully");
+      setFormData({
+        full_name: '',
+        email: '',
+        type: '',
+        status: '',
+        phone: ''
+      });
+      navigate("/library/member");
+
+    } catch (error) {
+      console.error("Error adding member:", error);
+    }
   };
 
   const handleChange = (e) => {
@@ -41,26 +54,39 @@ const MemberForm = () => {
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Member ID</label>
+          <label className="block text-sm font-medium mb-1">Name</label>
           <input
             type="text"
-            name="memberId"
-            value={formData.memberId}
+            name="full_name"
+            value={formData.full_name}
             onChange={handleChange}
-            placeholder="e.g., LIB-2024000"
+            placeholder="Enter member name"
             className="w-full p-2 border rounded"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Name</label>
+          <label className="block text-sm font-medium mb-1">Email</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Enter member email"
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Phone</label>
           <input
             type="text"
-            name="name"
-            value={formData.name}
+            name="phone"
+            value={formData.phone}
             onChange={handleChange}
-            placeholder="Enter member name"
+            placeholder="Enter member phone"
             className="w-full p-2 border rounded"
             required
           />
@@ -92,47 +118,9 @@ const MemberForm = () => {
             required
           >
             <option value="">Select status</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-            <option value="Suspended">Suspended</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
           </select>
-        </div>
-
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Books Issued</label>
-            <input
-              type="number"
-              name="booksIssued"
-              value={formData.booksIssued}
-              onChange={handleChange}
-              min="0"
-              max="5"
-              className="w-full p-2 border rounded"
-              required
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Max Books</label>
-            <input
-              type="number"
-              value={formData.maxBooks}
-              className="w-full p-2 border rounded bg-gray-100"
-              disabled
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Join Date</label>
-          <input
-            type="date"
-            name="joinDate"
-            value={formData.joinDate}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
         </div>
 
         <button

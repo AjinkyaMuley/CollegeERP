@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import logo from "./assets/logo.png";
 import logo2 from "./assets/logo2.png";
 import {
@@ -10,17 +11,31 @@ import {
   ChevronRight,
   Sun,
   Moon,
-  BarChart2, // Icon for Statistics
-  Globe,      // Icon for Website Management
-  Book,       // Icon for Library Management
-  MessageCircle, // Icon for Grievances and Feedbacks
-  FileText,   // Icon for each submenu
+  BarChart2,
+  Globe,
+  Book,
+  MessageCircle,
+  FileText,
+  PersonStanding,
+  User,
+  LogOut, // Icon for Logout
 } from "lucide-react";
 
 const Sidebar = () => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [openMenus, setOpenMenus] = useState({});
+  const navigate = useNavigate();
+  const [role,setRole]=useState('');
+
+  useEffect(()=>{
+    if(localStorage.getItem('role')==='admin'){
+      setRole('admin');
+    }
+    else{
+      setRole('user');
+    }
+  },[navigate])
 
   // Toggle menu open/close
   const toggleMenu = (menu) => {
@@ -30,14 +45,19 @@ const Sidebar = () => {
     }));
   };
 
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("id");
+    localStorage.removeItem("role");
+    navigate("/login");
+  };
+
   const sidebarItems = [
     {
       label: "Home",
       icon: <Home />,
       href: "/",
-      subItems:[
-        {label:"Go to DashBoard",icon:<Home />,href:"/"},
-      ]
+      subItems: [{ label: "Go to Dashboard", icon: <Home />, href: "/" }],
     },
     {
       label: "Administration Statistics",
@@ -73,6 +93,15 @@ const Sidebar = () => {
       ],
     },
     {
+      label: "Student Management",
+      icon: <User />,
+      href: "/student",
+      subItems: [
+        { label: "Grades", icon: <FileText />, href: "/student/grades" },
+        { label: "Attendance", icon: <FileText />, href: "/student/attendance" },
+      ],
+    },
+    {
       label: "Grievances and Feedbacks",
       icon: <MessageCircle />,
       href: "/feedback",
@@ -84,9 +113,7 @@ const Sidebar = () => {
       ],
     },
   ];
-  
 
-  // Define theme colors
   const theme = {
     dark: {
       bg: "bg-black",
@@ -121,11 +148,9 @@ const Sidebar = () => {
             <img
               src={isDarkMode ? logo : logo2}
               alt="Logo"
-              className="h-20 w-20" // Fixed size for the logo
+              className="h-20 w-20"
             />
-            {isExpanded && (
-              <h2 className="text-xl font-bold ml-2">IIITN</h2>
-            )}
+            {isExpanded && <h2 className="text-xl font-bold ml-2">IIITN</h2>}
           </div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
@@ -136,7 +161,7 @@ const Sidebar = () => {
         </div>
 
         <ul className="mt-8">
-          {sidebarItems.map((item, index) => (
+          {role==='admin' ? sidebarItems.map((item, index) => (
             <li key={index}>
               <div
                 onClick={() => item.subItems && toggleMenu(item.label)}
@@ -161,20 +186,17 @@ const Sidebar = () => {
                 </ul>
               )}
             </li>
-          ))}
+          ))
+        :
+        null}
         </ul>
       </div>
 
-      {/* Theme toggle button at bottom */}
+      {/* Theme toggle and Logout button at bottom */}
       <div className="p-4 border-t border-gray-700">
         <button
           onClick={() => setIsDarkMode(!isDarkMode)}
-          className={`
-            ${currentTheme.hover}
-            p-2 rounded-lg
-            w-full flex items-center justify-center
-            transition-colors duration-200
-          `}
+          className={`${currentTheme.hover} p-2 rounded-lg w-full flex items-center justify-center transition-colors duration-200`}
         >
           {isExpanded ? (
             <div className="flex items-center">
@@ -187,6 +209,24 @@ const Sidebar = () => {
             <Moon />
           )}
         </button>
+
+        {/* Logout button */}
+        {
+          localStorage.getItem('id') ?  <button
+          onClick={handleLogout}
+          className={`${currentTheme.hover} p-2 rounded-lg w-full mt-2 flex items-center justify-center transition-colors duration-200`}
+        >
+          {isExpanded ? (
+            <div className="flex items-center">
+              <LogOut className="mr-2" />
+              <span>Logout</span>
+            </div>
+          ) : (
+            <LogOut />
+          )}
+        </button> : null
+        }
+       
       </div>
     </nav>
   );

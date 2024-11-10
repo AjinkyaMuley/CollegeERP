@@ -14,6 +14,7 @@ import inventoryRoutes from './routes/inventroryRoutes.js'
 import memberRouter from './routes/memberRoutes.js'
 import attendanceRouter from './routes/attendanceRoutes.js'
 import gradeRouter from './routes/gradeRoutes.js'
+import loginRouter from './routes/authRoutes.js'
 
 dotenv.config()
 const app = express();
@@ -35,6 +36,7 @@ app.use('/api/books',inventoryRoutes);
 app.use('/api/members',memberRouter);
 app.use('/api/attendance',attendanceRouter);
 app.use('/api/grades',gradeRouter);
+app.use('/api/auth',loginRouter);
 
 app.listen(process.env.PORT,() => {
     console.log("Server running on PORT " + process.env.PORT);

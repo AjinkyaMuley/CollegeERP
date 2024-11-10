@@ -105,7 +105,25 @@ const Dashboard = () => {
     returnsToday: 0
   });
 
+  const [memberStats,setMemberStats]=useState({
+    totalMembers: 0,
+    studentMembers: 0,
+    facultyMembers: 0,
+    activeMembers: 0
+  });
+
   useEffect(() => {
+
+    const fetchMemberStats=async()=>{
+      try {
+        const response=await axios.get("http://localhost:8000/api/members/get-all-member-stats");
+        if(response){
+          setMemberStats(response.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+  }
 
     const fetchAdmissionStats = async () => {
       try {
@@ -226,6 +244,7 @@ const Dashboard = () => {
     fetchStudentStats();
     fetchStreamStats();
     fetchPaymentStats();
+    fetchMemberStats();
 
   }, []); 
 
@@ -260,10 +279,10 @@ const Dashboard = () => {
       'Categories': inventoryStats.totalCategories
     },
     members: {
-      'Total Members': 5,
-      'Student Members': 3,
-      'Faculty Members': 2,
-      'Active Members': 2
+      'Total Members': memberStats.totalMembers,
+      'Student Members': memberStats.studentMembers,
+      'Faculty Members': memberStats.facultyMembers,
+      'Active Members': memberStats.activeMembers
     },
     fineCollection: {
       'Total Fine': `₹ ${finestats.totalFine}`,
@@ -320,6 +339,15 @@ const Dashboard = () => {
     }
   };
 
+  const studentManageStats={
+      grades:{
+
+      },
+      attendance:{
+
+      }
+  };
+
   return (
     <div className="flex-grow bg-gray-100 p-8 overflow-auto">
 
@@ -332,10 +360,11 @@ const Dashboard = () => {
 
       <SectionHeader title="Administration Statistics" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <DashboardCard title="Stream Stats" color="red" items={adminStats.streams} link="/admin/stream" />
         <DashboardCard title="Student Stats" color="blue" items={adminStats.students} link="/admin/student" />
         <DashboardCard title="Admission Stats" color="green" items={adminStats.admissions} link="/admin/admission" />
         <DashboardCard title="Payment Stats" color="yellow" items={adminStats.payments} link="/admin/payment" />
+        <DashboardCard title="Stream Stats" color="red" items={adminStats.streams} link="/admin/stream" />
+
       </div>
 
 
@@ -354,6 +383,12 @@ const Dashboard = () => {
         <DashboardCard title="Total Members" color="blue" items={libraryStats.members} link="/library/member" />
         <DashboardCard title="Fine Collection Stats" color="green" items={libraryStats.fineCollection} link="/library/fine" />
         <DashboardCard title="Book Issued Stats" color="yellow" items={libraryStats.bookIssued} link="/library/bookissue" />
+      </div>
+
+      <SectionHeader title="Student Management" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <DashboardCard title="Grades Management" color="red" items={studentManageStats.grades} link="/student/grades" />
+        <DashboardCard title="Attendance" color="blue" items={studentManageStats.attendance} link="/student/attendance" />
       </div>
 
 

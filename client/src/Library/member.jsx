@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, Users, GraduationCap, UserCog, UserCheck, Plus, Eye, Edit, Trash2, Filter } from 'lucide-react';
@@ -12,25 +12,68 @@ import {
 import {
   Badge,
 } from "@/components/ui/badge";
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const MemberManagement = () => {
-  const stats = {
-    totalMembers: 5,
-    studentMembers: 3,
-    facultyMembers: 2,
-    activeMembers: 2
-  };
+
+  const navigate=useNavigate();
+  const [memberStats,setMemberStats]=useState({
+    totalMembers: 0,
+    studentMembers: 0,
+    facultyMembers: 0,
+    activeMembers: 0
+  })
+
+  const [memberData,setMemberData]=useState([]);
+
+  const fetchMemberStats=async()=>{
+      try {
+        const response=await axios.get("http://localhost:8000/api/members/get-all-member-stats");
+        if(response){
+          setMemberStats(response.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+  }
+
+  const fetchMemberData=async()=>{
+    try {
+      const response=await axios.get("http://localhost:8000/api/members/get-all-members");
+      if(response){
+        // console.log(response.data);
+        setMemberData(response.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  useEffect(()=>{
+    fetchMemberStats();
+    fetchMemberData();
+  },[])
 
   const handleNewMember = () => {
     // Handle new member logic
+    navigate("/library/members/add");
   };
 
   const handleEdit = (id) => {
     // Handle edit logic
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (member_id) => {
     // Handle delete logic
+    const response=await axios.delete(`http://localhost:8000/api/members/delete-member/${member_id}`);
+    if(response.status===200){
+      fetchMemberData();
+      fetchMemberStats();
+    }
+    else{
+      alert("error deleteing member !");
+    }
+
   };
 
   const handleView = (id) => {
@@ -49,7 +92,7 @@ const MemberManagement = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-indigo-50 to-white">
                 <div className="text-xs font-medium text-indigo-600">Total Members</div>
-                <div className="text-xl font-bold text-indigo-700">{stats.totalMembers}</div>
+                <div className="text-xl font-bold text-indigo-700">{memberStats.totalMembers}</div>
               </div>
             </div>
           </CardContent>
@@ -63,7 +106,7 @@ const MemberManagement = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-blue-50 to-white">
                 <div className="text-xs font-medium text-blue-600">Student Members</div>
-                <div className="text-xl font-bold text-blue-700">{stats.studentMembers}</div>
+                <div className="text-xl font-bold text-blue-700">{memberStats.studentMembers}</div>
               </div>
             </div>
           </CardContent>
@@ -77,7 +120,7 @@ const MemberManagement = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-amber-50 to-white">
                 <div className="text-xs font-medium text-amber-600">Faculty Members</div>
-                <div className="text-xl font-bold text-amber-700">{stats.facultyMembers}</div>
+                <div className="text-xl font-bold text-amber-700">{memberStats.facultyMembers}</div>
               </div>
             </div>
           </CardContent>
@@ -91,7 +134,7 @@ const MemberManagement = () => {
               </div>
               <div className="p-3 flex-1 bg-gradient-to-br from-green-50 to-white">
                 <div className="text-xs font-medium text-green-600">Active Members</div>
-                <div className="text-xl font-bold text-green-700">{stats.activeMembers}</div>
+                <div className="text-xl font-bold text-green-700">{memberStats.activeMembers}</div>
               </div>
             </div>
           </CardContent>
@@ -156,62 +199,63 @@ const MemberManagement = () => {
                 <th className="p-3 text-left text-sm font-medium text-gray-500">Name</th>
                 <th className="p-3 text-left text-sm font-medium text-gray-500">Type</th>
                 <th className="p-3 text-left text-sm font-medium text-gray-500">Status</th>
-                <th className="p-3 text-left text-sm font-medium text-gray-500">Books Issued</th>
+                {/* <th className="p-3 text-left text-sm font-medium text-gray-500">Books Issued</th> */}
                 <th className="p-3 text-left text-sm font-medium text-gray-500">Join Date</th>
                 <th className="p-3 text-left text-sm font-medium text-gray-500">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {[...Array(5)].map((_, index) => (
-                <tr key={index} className="border-t hover:bg-gray-50">
-                  <td className="p-3 font-medium">LIB-{2024000 + index}</td>
-                  <td className="p-3">Member Name {index + 1}</td>
-                  <td className="p-3">
-                    <Badge variant="outline" className={index % 4 === 0 ? "text-amber-600" : "text-blue-600"}>
-                      {index % 4 === 0 ? 'Faculty' : 'Student'}
-                    </Badge>
-                  </td>
-                  <td className="p-3">
-                    <Badge className={`
-                      ${index % 3 === 0 ? 'bg-green-100 text-green-700' : ''}
-                      ${index % 3 === 1 ? 'bg-yellow-100 text-yellow-700' : ''}
-                      ${index % 3 === 2 ? 'bg-red-100 text-red-700' : ''}
-                    `}>
-                      {index % 3 === 0 ? 'Active' : index % 3 === 1 ? 'Inactive' : 'Suspended'}
-                    </Badge>
-                  </td>
-                  <td className="p-3">{index} / 5</td>
-                  <td className="p-3">2024-01-{(index + 1).toString().padStart(2, '0')}</td>
-                  <td className="p-3">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-blue-600 hover:bg-blue-50"
-                        onClick={() => handleView(index)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-amber-600 hover:bg-amber-50"
-                        onClick={() => handleEdit(index)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:bg-red-50"
-                        onClick={() => handleDelete(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+            {memberData.map((member, index) => (
+  <tr key={index} className="border-t hover:bg-gray-50">
+    <td className="p-3 font-medium">{member.member_id}</td>
+    <td className="p-3">{member.full_name}</td>
+    <td className="p-3">
+      <Badge variant="outline" className={member.type === "Faculty" ? "text-amber-600" : "text-blue-600"}>
+        {member.type}
+      </Badge>
+    </td>
+    <td className="p-3">
+      <Badge className={`
+        ${member.status === 'active' ? 'bg-green-100 text-green-700' : ''}
+        ${member.status === 'inactive' ? 'bg-yellow-100 text-red-700' : ''}
+        ${member.status === 'Suspended' ? 'bg-red-100 text-red-700' : ''}
+      `}>
+        {member.status || 'inactive'}
+      </Badge>
+    </td>
+    {/* <td className="p-3">{index} / 5</td> */}
+    <td className="p-3">{new Date(member.created_at).toLocaleDateString()}</td>
+    <td className="p-3">
+      <div className="flex space-x-2">
+        {/* <Button
+          variant="outline"
+          size="sm"
+          className="text-blue-600 hover:bg-blue-50"
+          onClick={() => handleView(member.member_id)}
+        >
+          <Eye className="h-4 w-4" /> */}
+        {/* </Button> */}
+        {/* <Button
+          variant="outline"
+          size="sm"
+          className="text-amber-600 hover:bg-amber-50"
+          onClick={() => handleEdit(member.member_id)}
+        >
+          <Edit className="h-4 w-4" />
+        </Button> */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-red-600 hover:bg-red-50"
+          onClick={() => handleDelete(member.member_id)}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </td>
+  </tr>
+))}
+
             </tbody>
           </table>
         </div>
@@ -220,7 +264,7 @@ const MemberManagement = () => {
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-700">
             Showing <span className="font-medium">1</span> to <span className="font-medium">5</span> of{' '}
-            <span className="font-medium">{stats.totalMembers}</span> results
+            <span className="font-medium">{memberStats.totalMembers}</span> results
           </p>
           <nav className="inline-flex -space-x-px rounded-md shadow-sm">
             <Button variant="outline" className="rounded-l-md px-2 py-1">Previous</Button>

@@ -15,6 +15,8 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { User, Lock, LogIn, Mail, ArrowRight } from 'lucide-react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +24,7 @@ const LoginPage = () => {
     password: '',
     rememberMe: false
   });
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
@@ -30,9 +33,27 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    console.log('Login attempted:', formData);
+    const response =await axios.post('http://localhost:8000/api/auth/login',
+      {email : formData.username,password : formData.password}
+    )
+
+    if(response.status === 200)
+    {
+      localStorage.setItem('role',response.data.role);
+      localStorage.setItem('id',response.data.userData[0].id);
+
+      if(response.data.role==="students"){
+        navigate("/student/erp-student");
+      }
+      else if(response.data.role==="faculty"){
+        navigate("/student/erp-faculty");
+      }
+      else{
+        navigate('/')
+      }
+
+    }
+    console.log('Login attempted:', response.data.userData[0].id);
   };
 
   return (
@@ -109,14 +130,14 @@ const LoginPage = () => {
                   Remember me
                 </Label>
               </div>
-              <Button 
+              {/* <Button 
                 type="button" 
                 variant="ghost" 
                 className="text-sm text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
                 onClick={() => setShowResetDialog(true)}
               >
                 Forgot Password?
-              </Button>
+              </Button> */}
             </div>
 
             {/* Login Button */}
@@ -139,7 +160,7 @@ const LoginPage = () => {
             </Button>
 
             {/* Register Link */}
-            <div className="text-center space-y-4">
+            {/* <div className="text-center space-y-4">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-700" />
@@ -158,8 +179,8 @@ const LoginPage = () => {
                   New Account
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-              </div>
-            </div>
+              </div> */}
+            {/* </div> */}
           </form>
         </CardContent>
       </Card>
